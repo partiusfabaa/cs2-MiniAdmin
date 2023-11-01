@@ -16,7 +16,7 @@ Adds basic administrator functions
 
 **css_map <name_map>, !map <name_map>** - allows you to change the map on the server
 
-**css_ban <userid> <time_minutes> <reason>, !ban <userid> <time_minutes> <reason> - Bans a player
+**css_ban <userid> <time_minutes> <reason>, !ban <userid> <time_minutes> <reason>** - Bans a player
 
 **css_unban <steamid>, !unban <steamid>** - unbans the player
 
