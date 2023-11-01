@@ -515,7 +515,7 @@ public class MiniAdmin : BasePlugin
         var cmdArg = command.ArgString;
 
         if (controller != null)
-            if (!IsAdmin(controller))
+            if (!IsAdmin(controller)) 
             {
                 PrintToChat(controller, "you do not have access to this command");
                 return;
