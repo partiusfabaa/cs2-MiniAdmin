@@ -9,14 +9,20 @@ Adds basic administrator functions
 # Commands
 #### For administrators:
 **css_who, !who** - shows all players, admin and game time
+
 **css_slay <userid>, !slay <userid>** - allows you to kill a player
+
 **css_kick <userid>, !kick <userid>** - allows you to kick a player from the server
+
 **css_map <name_map>, !map <name_map>** - allows you to change the map on the server
+
 **css_ban <userid> <time_minutes> <reason>, !ban <userid> <time_minutes> <reason> - Bans a player
+
 **css_unban <steamid>, !unban <steamid>** - unbans the player
 
 #### For chief administrators:
 **css_addadmin <username> <steamid> <time_minutes>, !addadmin <username> <steamid> <time_minutes>** - Adds an administrator
+
 **css_deleteadmin <steamid>, !deleteadmin <steamid>** - Removes the administrator
 
 # Configs
