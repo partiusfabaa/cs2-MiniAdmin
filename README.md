@@ -7,7 +7,7 @@ Adds basic administrator functions
 4. Unzip the archive and upload it to the game server
 
 # Commands
-#### For administrators:
+## For administrators:
 **css_who, !who** - shows all players, admin and game time
 
 **css_slay "userid", !slay "userid"** - allows you to kill a player
@@ -20,7 +20,7 @@ Adds basic administrator functions
 
 **css_unban "steamid", !unban "steamid"** - unbans the player
 
-#### For chief administrators:
+## For chief administrators:
 **css_addadmin username "steamid" "time_minutes", !addadmin username "steamid" "time_minutes"** - Adds an administrator
 
 **css_deleteadmin "steamid", !deleteadmin "steamid"** - Removes the administrator
