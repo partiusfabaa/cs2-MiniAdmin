@@ -31,8 +31,8 @@ public class MiniAdmin : BasePlugin
     public override void Load(bool hotReload)
     {
         _dbConnectionString = BuildConnectionString();
-        Task.Run(async () => await CreateTable(_dbConnectionString));
-        Task.Run(async () => await CreateAdminsTable(_dbConnectionString));
+        Task.Run(() => CreateTable(_dbConnectionString));
+        Task.Run(() => CreateAdminsTable(_dbConnectionString));
 
         RegisterListener<Listeners.OnClientConnected>(slot =>
         {
@@ -151,10 +151,12 @@ public class MiniAdmin : BasePlugin
 
     static async Task CreateTable(string connectionString)
     {
-        await using var dbConnection = new MySqlConnection(connectionString);
-        dbConnection.Open();
+        try
+        {
+            await using var dbConnection = new MySqlConnection(connectionString);
+            dbConnection.Open();
 
-        var createBansTable = @"
+            var createBansTable = @"
             CREATE TABLE IF NOT EXISTS `miniadmin_bans` (
                 `Id` INT AUTO_INCREMENT PRIMARY KEY,
                 `AdminUsername` VARCHAR(255) NOT NULL,
@@ -171,25 +173,37 @@ public class MiniAdmin : BasePlugin
                 `BanActive` BOOLEAN NOT NULL
             );";
 
-        await dbConnection.ExecuteAsync(createBansTable);
+            await dbConnection.ExecuteAsync(createBansTable);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 
     static async Task CreateAdminsTable(string connectionString)
     {
-        await using var connection = new MySqlConnection(connectionString);
+        try
+        {
+            await using var connection = new MySqlConnection(connectionString);
 
-        connection.Open();
+            connection.Open();
 
-        var createAdminsTable = @"
-        CREATE TABLE IF NOT EXISTS `miniadmin_admins` (
-            `Id` INT AUTO_INCREMENT PRIMARY KEY,
-            `Username` VARCHAR(255) NOT NULL,
-            `SteamId` VARCHAR(255) NOT NULL,
-            `StartTime` DATETIME NOT NULL,
-            `EndTime` DATETIME NOT NULL
-        );";
+            var createAdminsTable = @"
+                CREATE TABLE IF NOT EXISTS `miniadmin_admins` (
+                `Id` INT AUTO_INCREMENT PRIMARY KEY,
+                `Username` VARCHAR(255) NOT NULL,
+                `SteamId` VARCHAR(255) NOT NULL,
+                `StartTime` DATETIME NOT NULL,
+                `EndTime` DATETIME NOT NULL
+            );";
 
-        await connection.ExecuteAsync(createAdminsTable);
+            await connection.ExecuteAsync(createAdminsTable);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 
     [ConsoleCommand("css_who")]
