@@ -18,7 +18,7 @@ Adds basic administrator functions
 
 **css_ban "userid" "time_minutes" "reason", !ban "userid" "time_minutes" "reason"** - Bans a player
 
-**css_unban "steamid", !unban "steamid"** - unbans the player
+**css_unban "steamid" "reason", !unban "steamid" "reason"** - unbans the player
 
 ## For chief administrators:
 **css_addadmin "username" "steamid" "time_minutes", !addadmin "username" "steamid" "time_minutes"** - Adds an administrator
