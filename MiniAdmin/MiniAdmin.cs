@@ -19,7 +19,7 @@ namespace MiniAdmin;
 public class MiniAdmin : BasePlugin
 {
     public override string ModuleName => "Mini Admin by thesamefabius";
-    public override string ModuleVersion => "v1.0.0";
+    public override string ModuleVersion => "v1.0.1";
 
     private string _dbConnectionString = string.Empty;
 
@@ -41,7 +41,7 @@ public class MiniAdmin : BasePlugin
             if (entity == IntPtr.Zero) return;
 
             var player = new CCSPlayerController(entity);
-            
+
             Task.Run(() => OnClientConnectedAsync(slot, player, new SteamID(player.SteamID)));
         });
 
@@ -75,7 +75,7 @@ public class MiniAdmin : BasePlugin
                 foreach (var result in adminsEnumerable.Select(deleteAdmin => DeleteAdmin(deleteAdmin.SteamId)))
                     PrintToServer(await result, ConsoleColor.DarkMagenta);
             }
-            
+
             var banUser = await connection.QueryFirstOrDefaultAsync<User>(
                 "SELECT * FROM miniadmin_bans WHERE SteamId64 = @SteamId64 AND BanActive = 1",
                 new { steamId.SteamId64 });
@@ -240,7 +240,7 @@ public class MiniAdmin : BasePlugin
             var formattedOutput =
                 $"{id,-1} - {playerName,-15} | {adminStatus,-6} | Playtime: {playTime.Hours:D2}:{playTime.Minutes:D2}:{playTime.Seconds:D2}";
 
-            if(controller == null)
+            if (controller == null)
                 PrintToServer(formattedOutput, ConsoleColor.Magenta);
             else
                 PrintToChat(controller, formattedOutput);
@@ -392,7 +392,7 @@ public class MiniAdmin : BasePlugin
 
         Console.WriteLine($"ExtractValue: {endBanTime}");
         Console.WriteLine($"Split: {splitCmdArgs[0]} + {splitCmdArgs[1]} + {splitCmdArgs[2]}");
-        
+
         var msg = Task.Run(() => AddBan(new User
         {
             AdminUsername = controller != null ? controller.PlayerName : "Console",
@@ -405,7 +405,7 @@ public class MiniAdmin : BasePlugin
             AdminUnlockedUsername = "",
             AdminUnlockedSteamId = "",
             StartBanTime = DateTime.Now,
-            EndBanTime = DateTime.Now.AddMinutes(endBanTime),
+            EndBanTime = endBanTime == 0 ? DateTime.MaxValue : DateTime.Now.AddMinutes(endBanTime),
             BanActive = true
         })).Result;
 
@@ -436,14 +436,14 @@ public class MiniAdmin : BasePlugin
 
         var username = ExtractValueInQuotes(cmdArgSplit[0]);
         var steamId = ExtractValueInQuotes(cmdArgSplit[1]);
-        var endTime = ExtractValueInQuotes(cmdArgSplit[2]);
+        var endTime = Convert.ToInt32(ExtractValueInQuotes(cmdArgSplit[2]));
 
         var msg = Task.Run(() => AddAdmin(new Admins
         {
             Username = username,
             SteamId = steamId,
             StartTime = DateTime.Now,
-            EndTime = DateTime.Now.AddMinutes(int.Parse(endTime))
+            EndTime = endTime == 0 ? DateTime.MaxValue : DateTime.Now.AddMinutes(endTime)
         })).Result;
 
         ReplyToCommand(controller, msg);
@@ -511,7 +511,7 @@ public class MiniAdmin : BasePlugin
             ReplyToCommand(controller, "Using: css_unban <SteamId> <Reason>");
             return;
         }
-        
+
         var steamId = ExtractValueInQuotes(cmdArg[0]);
         var reason = ExtractValueInQuotes(cmdArg[1]);
 
@@ -529,7 +529,7 @@ public class MiniAdmin : BasePlugin
         var cmdArg = command.ArgString;
 
         if (controller != null)
-            if (!IsAdmin(controller)) 
+            if (!IsAdmin(controller))
             {
                 PrintToChat(controller, "you do not have access to this command");
                 return;
@@ -583,11 +583,11 @@ public class MiniAdmin : BasePlugin
             user.BanActive = false;
 
             await connection.ExecuteAsync(@"
-                UPDATE miniadmin_bans
-                SET UnbanReason = @UnbanReason, AdminUnlockedUsername = @AdminUnlockedUsername,
-                    AdminUnlockedSteamId = @AdminUnlockedSteamId, BanActive = @BanActive
-                WHERE SteamId = @SteamId AND BanActive = 1
-                ", user);
+                    UPDATE miniadmin_bans
+                    SET UnbanReason = @UnbanReason, AdminUnlockedUsername = @AdminUnlockedUsername,
+                        AdminUnlockedSteamId = @AdminUnlockedSteamId, BanActive = @BanActive
+                    WHERE SteamId = @SteamId AND BanActive = 1
+                    ", user);
 
             return $"Player {steamId} has been successfully unblocked with reason: {reason}";
         }
@@ -640,18 +640,15 @@ public class MiniAdmin : BasePlugin
             }
         };
 
-        var filePath = Path.Combine(ModuleDirectory, "maps.txt");
-        if (!File.Exists(filePath)) File.WriteAllLines(filePath, new[] { "de_dust2" });
-
         File.WriteAllText(configPath,
             JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true }));
         return config;
     }
-    
+
     private string ExtractValueInQuotes(string input)
     {
         var match = Regex.Match(input, @"""([^""]*)""");
-        
+
         return match.Success ? match.Groups[1].Value : input;
     }
 
