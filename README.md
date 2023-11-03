@@ -16,7 +16,7 @@ Adds basic administrator functions
 
 `css_map "name_map"`, `!map "name_map"` - allows you to change the map on the server
 
-`css_ban "userid" "time_minutes or 0 - permanently" "reason"`
+`css_ban "userid" "time_minutes or 0 - permanently" "reason"`,
 
 `!ban "userid" "time_minutes or 0 - permanently" "reason"` - Bans a player
 
