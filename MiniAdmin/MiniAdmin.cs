@@ -229,7 +229,7 @@ public class MiniAdmin : BasePlugin
             var adminStatus = IsAdmin(client) ? "admin " : "player";
 
             var index = client.EntityIndex!.Value.Value;
-            var playTime = DateTime.Now - _playerPlayTime[index];
+            var playTime = DateTime.Now - _playerPlayTime[index]; 
 
             id++;
             var formattedOutput =
