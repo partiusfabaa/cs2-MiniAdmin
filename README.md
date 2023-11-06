@@ -21,6 +21,7 @@ Adds basic administrator functions
 `!ban "userid" "time_minutes or 0 - permanently" "reason"` - Bans a player
 
 `css_unban "steamid" "reason"`, `!unban "steamid" "reason"` - unbans the player 
+
 (example SteamId: STEAM_0:1:123456)
 
 ## For chief administrators:
@@ -29,6 +30,7 @@ Adds basic administrator functions
 `!addadmin "username" "steamid" "time_minutes or 0 - permanently"` - Adds an administrator
 
 `css_deleteadmin "steamid"`, `!deleteadmin "steamid"` - Removes the administrator 
+
 (example SteamId: STEAM_0:1:123456)
 
 # Configs
