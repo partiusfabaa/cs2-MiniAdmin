@@ -8,7 +8,7 @@ Adds basic administrator functions
 
 # Commands
 ## For administrators:
-`css_who`, `!who` - shows all players, admin and game time
+`css_who`, `!who` - shows all players, admin and game time(server console only)
 
 `css_slay "userid"`, `!slay "userid"` - allows you to kill a player
 
