@@ -41,3 +41,6 @@ MiniAdmin/obj/Debug/net7.0/MiniAdmin.AssemblyInfo.cs
 MiniAdmin/obj/MiniAdmin.csproj.nuget.g.props
 MiniAdmin/obj/MiniAdmin.csproj.nuget.g.targets
 *.info
+MiniAdmin/.idea/.idea.MiniAdmin.dir/.idea/discord.xml
+MiniAdmin/obj/release/net7.0/.NETCoreApp,Version=v7.0.AssemblyAttributes.cs
+MiniAdmin/obj/release/net7.0/MiniAdmin.AssemblyInfo.cs

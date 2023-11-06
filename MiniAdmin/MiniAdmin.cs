@@ -18,7 +18,8 @@ namespace MiniAdmin;
 
 public class MiniAdmin : BasePlugin
 {
-    public override string ModuleName => "Mini Admin by thesamefabius";
+    public override string ModuleAuthor => "thesamefabius";
+    public override string ModuleName => "Mini Admin";
     public override string ModuleVersion => "v1.0.1";
 
     private string _dbConnectionString = string.Empty;
@@ -58,7 +59,7 @@ public class MiniAdmin : BasePlugin
 
             var unbanUsers = await connection.QueryAsync<User>(
                 "SELECT * FROM miniadmin_bans WHERE EndBanTime <= @CurrentTime AND BanActive = 1",
-                new { CurrentTime = DateTime.Now });
+                new { CurrentTime = DateTime.UtcNow });
 
             foreach (var user in unbanUsers)
             {
@@ -67,7 +68,7 @@ public class MiniAdmin : BasePlugin
             }
 
             var deleteAdmins = await connection.QueryAsync<Admins>(
-                "SELECT * FROM miniadmin_admins WHERE EndTime <= @CurrentTime", new { CurrentTime = DateTime.Now });
+                "SELECT * FROM miniadmin_admins WHERE EndTime <= @CurrentTime", new { CurrentTime = DateTime.UtcNow });
 
             var adminsEnumerable = deleteAdmins.ToList();
             if (adminsEnumerable.Any())
@@ -209,18 +210,12 @@ public class MiniAdmin : BasePlugin
     [ConsoleCommand("css_who")]
     public void OnCmdWho(CCSPlayerController? controller, CommandInfo command)
     {
-        if (controller != null && !IsAdmin(controller))
-        {
-            PrintToChat(controller, "You do not have access to this command");
-            return;
-        }
-
-        ReplyToCommand(controller, "Users:");
+        if (controller != null) return;
 
         var maxNameLength = 0;
 
         var id = 0;
-        for (var i = 0; i < 64; i++)
+        for (var i = 1; i < 64; i++)
         {
             var entity = NativeAPI.GetEntityFromIndex(i);
             if (entity == IntPtr.Zero) continue;
@@ -240,10 +235,7 @@ public class MiniAdmin : BasePlugin
             var formattedOutput =
                 $"{id,-1} - {playerName,-15} | {adminStatus,-6} | Playtime: {playTime.Hours:D2}:{playTime.Minutes:D2}:{playTime.Seconds:D2}";
 
-            if (controller == null)
-                PrintToServer(formattedOutput, ConsoleColor.Magenta);
-            else
-                PrintToChat(controller, formattedOutput);
+            PrintToServer(formattedOutput, ConsoleColor.Magenta);
         }
     }
 
@@ -404,8 +396,8 @@ public class MiniAdmin : BasePlugin
             UnbanReason = "",
             AdminUnlockedUsername = "",
             AdminUnlockedSteamId = "",
-            StartBanTime = DateTime.Now,
-            EndBanTime = endBanTime == 0 ? DateTime.MaxValue : DateTime.Now.AddMinutes(endBanTime),
+            StartBanTime = DateTime.UtcNow,
+            EndBanTime = endBanTime == 0 ? DateTime.MaxValue : DateTime.UtcNow.AddMinutes(endBanTime),
             BanActive = true
         })).Result;
 
@@ -442,8 +434,8 @@ public class MiniAdmin : BasePlugin
         {
             Username = username,
             SteamId = steamId,
-            StartTime = DateTime.Now,
-            EndTime = endTime == 0 ? DateTime.MaxValue : DateTime.Now.AddMinutes(endTime)
+            StartTime = DateTime.UtcNow,
+            EndTime = endTime == 0 ? DateTime.MaxValue : DateTime.UtcNow.AddMinutes(endTime)
         })).Result;
 
         ReplyToCommand(controller, msg);
@@ -498,8 +490,8 @@ public class MiniAdmin : BasePlugin
     [ConsoleCommand("css_unban", "unban")]
     public void OnCmdUnban(CCSPlayerController? controller, CommandInfo command)
     {
-        var cmdArg = command.ArgString.Split(" ");
-
+        var cmdArg = command.ArgString;
+        
         if (controller != null && !IsAdmin(controller))
         {
             PrintToChat(controller, "you do not have access to this command");
@@ -511,15 +503,19 @@ public class MiniAdmin : BasePlugin
             ReplyToCommand(controller, "Using: css_unban <SteamId> <Reason>");
             return;
         }
+        
+        var splitCmdArgs = Regex.Matches(cmdArg, @"[\""].+?[\""]|[^ ]+")
+            .Select(m => m.Value)
+            .ToArray();
 
-        var steamId = ExtractValueInQuotes(cmdArg[0]);
-        var reason = ExtractValueInQuotes(cmdArg[1]);
+        var steamId = ExtractValueInQuotes(splitCmdArgs[0]);
+        var reason = ExtractValueInQuotes(splitCmdArgs[1]);
 
         var msg = Task.Run(() => UnbanUser(
             controller != null ? controller.PlayerName : "Console",
             controller != null ? new SteamID(controller.SteamID).SteamId2 : "Console",
             steamId, reason)).Result;
-
+    
         ReplyToCommand(controller, msg);
     }
 
@@ -541,7 +537,9 @@ public class MiniAdmin : BasePlugin
             return;
         }
 
-        var msg = Task.Run(() => DeleteAdmin(cmdArg)).Result;
+        var steamId = ExtractValueInQuotes(cmdArg);
+        
+        var msg = Task.Run(() => DeleteAdmin(steamId)).Result;
 
         ReplyToCommand(controller, msg);
     }
