@@ -11,6 +11,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Menu;
+using CounterStrikeSharp.API.Modules.Timers;
 using Dapper;
 using MySqlConnector;
 
@@ -20,7 +21,7 @@ public class MiniAdmin : BasePlugin
 {
     public override string ModuleAuthor => "thesamefabius";
     public override string ModuleName => "Mini Admin";
-    public override string ModuleVersion => "v1.0.1";
+    public override string ModuleVersion => "v1.0.3";
 
     private string _dbConnectionString = string.Empty;
 
@@ -48,7 +49,27 @@ public class MiniAdmin : BasePlugin
 
         RegisterListener<Listeners.OnClientDisconnectPost>(slot => { _playerPlayTime[slot + 1] = DateTime.MinValue; });
 
+        AddTimer(300, () =>
+        {
+            Task.Run(Timer_DeleteAdminAsync);
+        }, TimerFlags.REPEAT);
         CreateMenu();
+    }
+
+    private async Task Timer_DeleteAdminAsync()
+    {
+        await using var connection = new MySqlConnection(_dbConnectionString);
+            
+        var deleteAdmins = await connection.QueryAsync<Admins>(
+            "SELECT * FROM miniadmin_admins WHERE EndTime <= @CurrentTime",
+            new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
+
+        var adminsEnumerable = deleteAdmins.ToList();
+        if (adminsEnumerable.Any())
+        {
+            foreach (var result in adminsEnumerable.Select(deleteAdmin => DeleteAdmin(deleteAdmin.SteamId)))
+                PrintToServer(await result, ConsoleColor.DarkMagenta);
+        }
     }
 
     private async Task OnClientConnectedAsync(int slot, CCSPlayerController player, SteamID steamId)
@@ -59,7 +80,7 @@ public class MiniAdmin : BasePlugin
 
             var unbanUsers = await connection.QueryAsync<User>(
                 "SELECT * FROM miniadmin_bans WHERE EndBanTime <= @CurrentTime AND BanActive = 1",
-                new { CurrentTime = DateTime.UtcNow });
+                new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
 
             foreach (var user in unbanUsers)
             {
@@ -67,15 +88,7 @@ public class MiniAdmin : BasePlugin
                 await UnbanUser("Console", "Console", user.SteamId, "The deadline has passed");
             }
 
-            var deleteAdmins = await connection.QueryAsync<Admins>(
-                "SELECT * FROM miniadmin_admins WHERE EndTime <= @CurrentTime", new { CurrentTime = DateTime.UtcNow });
-
-            var adminsEnumerable = deleteAdmins.ToList();
-            if (adminsEnumerable.Any())
-            {
-                foreach (var result in adminsEnumerable.Select(deleteAdmin => DeleteAdmin(deleteAdmin.SteamId)))
-                    PrintToServer(await result, ConsoleColor.DarkMagenta);
-            }
+            await Timer_DeleteAdminAsync();
 
             var banUser = await connection.QueryFirstOrDefaultAsync<User>(
                 "SELECT * FROM miniadmin_bans WHERE SteamId64 = @SteamId64 AND BanActive = 1",
@@ -169,8 +182,8 @@ public class MiniAdmin : BasePlugin
                 `UnbanReason` VARCHAR(255) NOT NULL,
                 `AdminUnlockedUsername` VARCHAR(255) NOT NULL,
                 `AdminUnlockedSteamId` VARCHAR(255) NOT NULL,
-                `StartBanTime` DATETIME NOT NULL,
-                `EndBanTime` DATETIME NOT NULL,
+                `StartBanTime` BIGINT NOT NULL,
+                `EndBanTime` BIGINT NOT NULL,
                 `BanActive` BOOLEAN NOT NULL
             );";
 
@@ -195,8 +208,8 @@ public class MiniAdmin : BasePlugin
                 `Id` INT AUTO_INCREMENT PRIMARY KEY,
                 `Username` VARCHAR(255) NOT NULL,
                 `SteamId` VARCHAR(255) NOT NULL,
-                `StartTime` DATETIME NOT NULL,
-                `EndTime` DATETIME NOT NULL
+                `StartTime` BIGINT NOT NULL,
+                `EndTime` BIGINT NOT NULL
             );";
 
             await connection.ExecuteAsync(createAdminsTable);
@@ -355,7 +368,7 @@ public class MiniAdmin : BasePlugin
 
         if (command.ArgCount is < 4 or > 4)
         {
-            ReplyToCommand(controller, "Using: css_ban <userid> <time> <reason>");
+            ReplyToCommand(controller, "Using: css_ban <userid> <time_seconds> <reason>");
             return;
         }
 
@@ -382,6 +395,9 @@ public class MiniAdmin : BasePlugin
         Console.WriteLine($"ExtractValue: {endBanTime}");
         Console.WriteLine($"Split: {splitCmdArgs[0]} + {splitCmdArgs[1]} + {splitCmdArgs[2]}");
         
+        var startBanTimeUnix = DateTime.UtcNow.GetUnixEpoch();
+        var endBanTimeUnix = DateTime.UtcNow.AddSeconds(endBanTime).GetUnixEpoch();
+        
         var msg = Task.Run(() => AddBan(new User
         {
             AdminUsername = controller != null ? controller.PlayerName : "Console",
@@ -393,8 +409,8 @@ public class MiniAdmin : BasePlugin
             UnbanReason = "",
             AdminUnlockedUsername = "",
             AdminUnlockedSteamId = "",
-            StartBanTime = DateTime.UtcNow,
-            EndBanTime = endBanTime == 0 ? DateTime.MaxValue : DateTime.UtcNow.AddMinutes(endBanTime),
+            StartBanTime = startBanTimeUnix,
+            EndBanTime = endBanTime == 0 ? 0 : endBanTimeUnix,
             BanActive = true
         })).Result;
 
@@ -412,7 +428,7 @@ public class MiniAdmin : BasePlugin
 
         if (command.ArgCount is < 4 or > 4)
         {
-            PrintToServer("Using: css_addadmin <username> <steamid> <time_minutes>", ConsoleColor.Red);
+            PrintToServer("Using: css_addadmin <username> <steamid> <time_seconds>", ConsoleColor.Red);
             return;
         }
         
@@ -423,13 +439,16 @@ public class MiniAdmin : BasePlugin
         var username = ExtractValueInQuotes(splitCmdArgs[0]);
         var steamId = ExtractValueInQuotes(splitCmdArgs[1]);
         var endTime = Convert.ToInt32(ExtractValueInQuotes(splitCmdArgs[2]));
+        
+        var startTimeUnix = DateTime.UtcNow.GetUnixEpoch();
+        var endTimeUnix = DateTime.UtcNow.AddSeconds(endTime).GetUnixEpoch();
 
         var msg = Task.Run(() => AddAdmin(new Admins
         {
             Username = username,
             SteamId = steamId,
-            StartTime = DateTime.UtcNow,
-            EndTime = endTime == 0 ? DateTime.MaxValue : DateTime.UtcNow.AddMinutes(endTime)
+            StartTime = startTimeUnix,
+            EndTime = endTime == 0 ? 0 : endTimeUnix
         })).Result;
 
         PrintToServer(msg, ConsoleColor.Green);
@@ -715,6 +734,17 @@ public class MiniAdmin : BasePlugin
     }
 }
 
+public static class GetUnixTime
+{
+    public static int GetUnixEpoch(this DateTime dateTime)
+    {
+        var unixTime = dateTime.ToUniversalTime() - 
+                       new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        return (int)unixTime.TotalSeconds;
+    }
+}
+
 public class Config
 {
     public MiniAdminDb Connection { get; set; } = null!;
@@ -739,8 +769,8 @@ public class User
     public required string UnbanReason { get; set; }
     public required string AdminUnlockedUsername { get; set; }
     public required string AdminUnlockedSteamId { get; set; }
-    public DateTime StartBanTime { get; set; }
-    public DateTime EndBanTime { get; set; }
+    public int StartBanTime { get; set; }
+    public int EndBanTime { get; set; }
     public bool BanActive { get; set; }
 }
 
@@ -748,6 +778,6 @@ public class Admins
 {
     public required string Username { get; set; }
     public required string SteamId { get; set; }
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
+    public int StartTime { get; set; }
+    public int EndTime { get; set; }
 }
