@@ -529,7 +529,7 @@ public class MiniAdmin : BasePlugin
             controller != null ? new SteamID(controller.SteamID).SteamId2 : "Console",
             steamId, reason)).Result;
     
-        ReplyToCommand(controller, msg);
+        ReplyToCommand(controller, msg); 
     }
 
     [ConsoleCommand("css_deleteadmin", "delete admin")]
