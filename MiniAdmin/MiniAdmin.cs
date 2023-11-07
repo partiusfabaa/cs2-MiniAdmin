@@ -121,7 +121,7 @@ public class MiniAdmin : BasePlugin
 
     private void CreateSlayMenu()
     {
-        var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+        var playerEntities = Utilities.GetPlayers();
         _slayMenu.MenuOptions.Clear();
         _slayMenu.AddMenuOption("All", (controller, option) =>
         {
@@ -129,14 +129,14 @@ public class MiniAdmin : BasePlugin
         });
         foreach (var player in playerEntities)
         {
-            _slayMenu.AddMenuOption($"{player.PlayerName}:{player.EntityIndex!.Value.Value}", (controller, option) =>
+            if(!player.PawnIsAlive) continue;
+            
+            _slayMenu.AddMenuOption($"{player.PlayerName} [{player.EntityIndex!.Value.Value}]", (controller, option) =>
             {
-                var splitDisplay = option.Text.Split(":");
-                var entityTarget = NativeAPI.GetEntityFromIndex(int.Parse(splitDisplay[1]));
-                if (entityTarget == IntPtr.Zero) return;
-
-                var target = new CCSPlayerController(entityTarget);
-
+                var parts = option.Text.Split('[', ']');
+                if (parts.Length < 2) return;
+                var target = Utilities.GetPlayerFromIndex(int.Parse(parts[1]));
+                    
                 if (!target.PawnIsAlive)
                 {
                     PrintToChat(controller, "The player is already dead");
@@ -217,10 +217,7 @@ public class MiniAdmin : BasePlugin
         var id = 0;
         for (var i = 1; i < 64; i++)
         {
-            var entity = NativeAPI.GetEntityFromIndex(i);
-            if (entity == IntPtr.Zero) continue;
-
-            var client = new CCSPlayerController(entity);
+            var client = Utilities.GetPlayerFromIndex(i);
 
             var playerName = !string.IsNullOrWhiteSpace(client.PlayerName) ? client.PlayerName : "unknown";
             var playerNameLength = playerName.Length;
@@ -384,7 +381,7 @@ public class MiniAdmin : BasePlugin
 
         Console.WriteLine($"ExtractValue: {endBanTime}");
         Console.WriteLine($"Split: {splitCmdArgs[0]} + {splitCmdArgs[1]} + {splitCmdArgs[2]}");
-
+        
         var msg = Task.Run(() => AddBan(new User
         {
             AdminUsername = controller != null ? controller.PlayerName : "Console",
@@ -409,26 +406,23 @@ public class MiniAdmin : BasePlugin
     [ConsoleCommand("css_addadmin")]
     public void OnCmdAddAdmin(CCSPlayerController? controller, CommandInfo command)
     {
+        if(controller != null) return;
+    
         var cmdArg = command.ArgString;
-
-        if (controller != null)
-            if (!IsAdmin(controller))
-            {
-                PrintToChat(controller, "you do not have access to this command");
-                return;
-            }
-
-        var cmdArgSplit = cmdArg.Split(" ");
 
         if (command.ArgCount is < 4 or > 4)
         {
-            ReplyToCommand(controller, "Using: css_addadmin <username> <steamid> <time_minutes>");
+            PrintToServer("Using: css_addadmin <username> <steamid> <time_minutes>", ConsoleColor.Red);
             return;
         }
+        
+        var splitCmdArgs = Regex.Matches(cmdArg, @"[\""].+?[\""]|[^ ]+")
+            .Select(m => m.Value)
+            .ToArray();
 
-        var username = ExtractValueInQuotes(cmdArgSplit[0]);
-        var steamId = ExtractValueInQuotes(cmdArgSplit[1]);
-        var endTime = Convert.ToInt32(ExtractValueInQuotes(cmdArgSplit[2]));
+        var username = ExtractValueInQuotes(splitCmdArgs[0]);
+        var steamId = ExtractValueInQuotes(splitCmdArgs[1]);
+        var endTime = Convert.ToInt32(ExtractValueInQuotes(splitCmdArgs[2]));
 
         var msg = Task.Run(() => AddAdmin(new Admins
         {
@@ -438,7 +432,7 @@ public class MiniAdmin : BasePlugin
             EndTime = endTime == 0 ? DateTime.MaxValue : DateTime.UtcNow.AddMinutes(endTime)
         })).Result;
 
-        ReplyToCommand(controller, msg);
+        PrintToServer(msg, ConsoleColor.Green);
     }
 
     private async Task<string> AddBan(User user)
@@ -522,18 +516,13 @@ public class MiniAdmin : BasePlugin
     [ConsoleCommand("css_deleteadmin", "delete admin")]
     public void OnCmdDeleteAdmin(CCSPlayerController? controller, CommandInfo command)
     {
+        if (controller != null) return;
+        
         var cmdArg = command.ArgString;
-
-        if (controller != null)
-            if (!IsAdmin(controller))
-            {
-                PrintToChat(controller, "you do not have access to this command");
-                return;
-            }
 
         if (command.ArgCount is < 2 or > 2)
         {
-            ReplyToCommand(controller, "Using: css_deleteadmin <SteamId>");
+            PrintToServer("Using: css_deleteadmin <SteamId>", ConsoleColor.Red);
             return;
         }
 
@@ -541,7 +530,7 @@ public class MiniAdmin : BasePlugin
         
         var msg = Task.Run(() => DeleteAdmin(steamId)).Result;
 
-        ReplyToCommand(controller, msg);
+        PrintToServer(msg, ConsoleColor.Green);
     }
 
     private async Task<string> DeleteAdmin(string steamId)
@@ -611,7 +600,7 @@ public class MiniAdmin : BasePlugin
     {
         var dbConfig = LoadConfig();
 
-        Console.WriteLine("Building connnection string");
+        Console.WriteLine("Building connection string");
         var builder = new MySqlConnectionStringBuilder
         {
             Database = dbConfig.Connection.Database,
