@@ -61,7 +61,7 @@ public class MiniAdmin : BasePlugin
         await using var connection = new MySqlConnection(_dbConnectionString);
             
         var deleteAdmins = await connection.QueryAsync<Admins>(
-            "SELECT * FROM miniadmin_admins WHERE EndTime <= @CurrentTime",
+            "SELECT * FROM miniadmin_admins WHERE EndTime <= @CurrentTime AND EndTime > 0",
             new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
 
         var adminsEnumerable = deleteAdmins.ToList();
@@ -79,7 +79,7 @@ public class MiniAdmin : BasePlugin
             await using var connection = new MySqlConnection(_dbConnectionString);
 
             var unbanUsers = await connection.QueryAsync<User>(
-                "SELECT * FROM miniadmin_bans WHERE EndBanTime <= @CurrentTime AND BanActive = 1",
+                "SELECT * FROM miniadmin_bans WHERE EndBanTime <= @CurrentTime AND BanActive = 1 AND EndBanTime > 0",
                 new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
 
             foreach (var user in unbanUsers)
