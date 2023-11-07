@@ -228,10 +228,8 @@ public class MiniAdmin : BasePlugin
         var maxNameLength = 0;
 
         var id = 0;
-        for (var i = 1; i < 64; i++)
+        foreach (var client in Utilities.GetPlayers())
         {
-            var client = Utilities.GetPlayerFromIndex(i);
-
             var playerName = !string.IsNullOrWhiteSpace(client.PlayerName) ? client.PlayerName : "unknown";
             var playerNameLength = playerName.Length;
             maxNameLength = Math.Max(maxNameLength, playerNameLength);
