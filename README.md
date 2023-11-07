@@ -27,9 +27,9 @@ Adds basic administrator functions
 ## For chief administrators:
 `css_addadmin "username" "steamid" "time_minutes or 0 - permanently"`, 
 
-`!addadmin "username" "steamid" "time_minutes or 0 - permanently"` - Adds an administrator
+`!addadmin "username" "steamid" "time_minutes or 0 - permanently"` - Adds an administrator(server console only)
 
-`css_deleteadmin "steamid"`, `!deleteadmin "steamid"` - Removes the administrator 
+`css_deleteadmin "steamid"`, `!deleteadmin "steamid"` - Removes the administrator(server console only) 
 
 (example SteamId: STEAM_0:1:123456)
 
