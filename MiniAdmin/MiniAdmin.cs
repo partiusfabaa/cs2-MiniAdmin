@@ -36,6 +36,10 @@ public class MiniAdmin : BasePlugin
         Task.Run(() => CreateTable(_dbConnectionString));
         Task.Run(() => CreateAdminsTable(_dbConnectionString));
 
+        var path = Path.Combine(ModuleDirectory, "maps.txt");
+        if(!File.Exists(path))
+            File.WriteAllLines(path, new []{ "de_dust2" });
+
         RegisterListener<Listeners.OnClientConnected>(slot =>
         {
             var entity = NativeAPI.GetEntityFromIndex(slot + 1);
