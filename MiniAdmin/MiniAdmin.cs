@@ -570,7 +570,7 @@ public class MiniAdmin : BasePlugin
 
     private async Task<string> UnbanUser(string adminName, string adminSteamId, string steamId, string reason)
     {
-        try
+        try 
         {
             await using var connection = new MySqlConnection(_dbConnectionString);
 
