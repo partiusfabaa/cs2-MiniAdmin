@@ -300,15 +300,14 @@ public class MiniAdmin : BasePlugin
             return;
         }
 
-        var entity = NativeAPI.GetEntityFromIndex(Convert.ToInt32(cmdArg) + 1);
+        var target = Utilities.GetPlayerFromUserid(Convert.ToInt32(cmdArg));
 
-        if (entity == IntPtr.Zero)
+        if (!target.IsValid)
         {
             ReplyToCommand(controller, "Player not found");
             return;
         }
 
-        var target = new CCSPlayerController(entity);
         target.PlayerPawn.Value.CommitSuicide(true, true);
 
         if (controller == null)
@@ -338,18 +337,16 @@ public class MiniAdmin : BasePlugin
 
         var convertCmdArg = Convert.ToInt32(cmdArg);
 
-        var entity = NativeAPI.GetEntityFromIndex(convertCmdArg + 1);
-        var userId = NativeAPI.GetUseridFromIndex(convertCmdArg + 1);
+        var target = Utilities.GetPlayerFromUserid(convertCmdArg);
+        //var userId = NativeAPI.GetUseridFromIndex(convertCmdArg + 1);
 
-        if (entity == IntPtr.Zero)
+        if (!target.IsValid)
         {
             ReplyToCommand(controller, "Player not found");
             return;
         }
 
-        var target = new CCSPlayerController(entity);
-
-        KickClient($"{userId}");
+        KickClient($"{convertCmdArg}");
 
         var msg =
             $"{(controller != null ? controller.PlayerName : "Console")}: Player '{target.PlayerName}' kicked by admin";
@@ -380,16 +377,14 @@ public class MiniAdmin : BasePlugin
 
         var convertCmdArg = Convert.ToInt32(ExtractValueInQuotes(splitCmdArgs[0]));
 
-        var entity = NativeAPI.GetEntityFromIndex(convertCmdArg + 1);
-        var userId = NativeAPI.GetUseridFromIndex(convertCmdArg + 1);
+        var target = Utilities.GetPlayerFromUserid(convertCmdArg);
+        //var userId = NativeAPI.GetUseridFromIndex(convertCmdArg + 1);
 
-        if (entity == IntPtr.Zero)
+        if (!target.IsValid)
         {
             ReplyToCommand(controller, "Player not found");
             return;
         }
-
-        var target = new CCSPlayerController(entity);
 
         var endBanTime = Convert.ToInt32(ExtractValueInQuotes(splitCmdArgs[1]));
         var reason = ExtractValueInQuotes(splitCmdArgs[2]);
@@ -416,7 +411,7 @@ public class MiniAdmin : BasePlugin
             BanActive = true
         })).Result;
 
-        KickClient($"{userId}");
+        KickClient($"{convertCmdArg}");
 
         ReplyToCommand(controller, msg);
     }
