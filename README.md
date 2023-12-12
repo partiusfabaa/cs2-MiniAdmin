@@ -27,6 +27,8 @@ Adds basic administrator functions
 | `css_unmute <steamid> <reason>` | Enables voice chat for the player | UNBAN |
 | `css_rcon <command>` | Changes cvar with rcon | RCON |
 
+To write to admin chat, you need to open Team chat and write @MYTEXT
+
 ### FLAGS:
     Ban = a
     Unban = b
