@@ -12,7 +12,9 @@ Adds basic administrator functions
 ## For administrators:
 | Command | Description | Admin Flag |
 |---------|-------------|------------|
+| `css_admin`, `!admin` | opens the admin menu | - |
 | `css_who`, `!who` | Shows all players, admin, and game time (server console only) | - |
+| `css_slay "#userid or username"`, `!slay "userid"` | Allows you to kill a player | SLAY |
 | `css_slay "#userid or username"`, `!slay "userid"` | Allows you to kill a player | SLAY |
 | `css_kick "#userid or username"`, `!kick "userid"` | Allows you to kick a player from the server | KICK |
 | `css_map "name_map"`, `!map "name_map"` | Allows you to change the map on the server | MAP  |
