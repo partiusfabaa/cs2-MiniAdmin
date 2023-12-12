@@ -45,3 +45,13 @@ MiniAdmin/.idea/.idea.MiniAdmin.dir/.idea/discord.xml
 MiniAdmin/obj/release/net7.0/.NETCoreApp,Version=v7.0.AssemblyAttributes.cs
 MiniAdmin/obj/release/net7.0/MiniAdmin.AssemblyInfo.cs
 MiniAdmin/bin/release/net7.0/publish/MiniAdmin.zip
+Old/.idea/.idea.MiniAdmin.dir/.idea/projectSettingsUpdater.xml
+Old/.idea/.idea.MiniAdmin.dir/.idea/indexLayout.xml
+*.xml
+Old/bin/release/net7.0/publish/MiniAdmin.zip
+Old/obj/Debug/net7.0/.NETCoreApp,Version=v7.0.AssemblyAttributes.cs
+Old/obj/Debug/net7.0/MiniAdmin.AssemblyInfo.cs
+Old/obj/MiniAdmin.csproj.nuget.g.targets
+Old/obj/MiniAdmin.csproj.nuget.g.props
+Old/obj/release/net7.0/.NETCoreApp,Version=v7.0.AssemblyAttributes.cs
+Old/obj/release/net7.0/MiniAdmin.AssemblyInfo.cs
