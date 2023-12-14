@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
@@ -108,12 +109,15 @@ public class Menu
 
     private void CreateSlayMenu()
     {
-        var playerEntities = Utilities.GetPlayers();
+        var playerEntities =
+            Utilities.GetPlayers().Where(u => u.PlayerPawn.Value != null && u.PlayerPawn.Value.IsValid);
         _slayMenu.MenuOptions.Clear();
         _slayMenu.AddMenuOption("Pick a player", (_, _) => { }, true);
         _slayMenu.AddMenuOption("All", (controller, option) =>
         {
-            foreach (var player in playerEntities) player.PlayerPawn.Value.CommitSuicide(true, true);
+            foreach (var player in playerEntities)
+                if (player.PlayerPawn.Value != null)
+                    player.PlayerPawn.Value.CommitSuicide(true, true);
         });
         foreach (var player in playerEntities)
         {
@@ -131,7 +135,8 @@ public class Menu
                     return;
                 }
 
-                target.PlayerPawn.Value.CommitSuicide(true, true);
+                if (target.PlayerPawn.Value != null)
+                    target.PlayerPawn.Value.CommitSuicide(true, true);
 
                 _baseAdmin.PrintToChatAll($"{controller.PlayerName}: Player '{target.PlayerName}' has been killed");
             });
@@ -329,8 +334,11 @@ public class Menu
                 end_mute_time = endMuteTimeUnix == 0 ? 0 : endMuteTimeUnix,
                 mute_active = true
             }, controller == null ? null : controller);
+
+            if (muteType is BaseAdmin.MuteType.Micro or BaseAdmin.MuteType.All)
+                target.VoiceFlags = VoiceFlags.Muted;
         });
-        
+
         _baseAdmin.UpdateUserMuteLocal(target, time, endMuteTimeUnix, (int)muteType);
     }
 
@@ -391,9 +399,9 @@ public class Menu
                 foreach (var immunity in _baseAdmin.ReadAllImmunity())
                 {
                     immunityMenu.AddMenuOption(immunity,
-                        (_, _) =>
+                        (client, _) =>
                         {
-                            Task.Run(() => AddAdminFromMenu(target, int.Parse(immunity), int.Parse(split[1])));
+                            Task.Run(() => AddAdminFromMenu(client, target, int.Parse(immunity), int.Parse(split[1])));
                         });
                 }
 
@@ -404,13 +412,13 @@ public class Menu
         ChatMenus.OpenMenu(player, timeMenu);
     }
 
-    private async void AddAdminFromMenu(CCSPlayerController target,
+    private async void AddAdminFromMenu(CCSPlayerController client, CCSPlayerController target,
         int immunity, int time)
     {
         var startTimeUnix = DateTime.UtcNow.GetUnixEpoch();
         var endTimeUnix = DateTime.UtcNow.AddSeconds(time).GetUnixEpoch();
 
-        var msg = await _baseAdmin.Database.AddAdmin(new Admins
+        await _baseAdmin.Database.AddAdmin(new Admins
         {
             username = target.PlayerName,
             steamid = new SteamID(target.SteamID).SteamId2,
@@ -418,8 +426,6 @@ public class Menu
             end_time = time == 0 ? time : endTimeUnix,
             immunity = immunity,
             flags = "s"
-        });
-
-        _baseAdmin.PrintToChatAll(msg);
+        }, client, true);
     }
 }

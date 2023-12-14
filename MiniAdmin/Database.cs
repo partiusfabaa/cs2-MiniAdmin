@@ -81,7 +81,7 @@ public class Database
 
     public async Task CreateMuteTable()
     {
-        try   
+        try
         {
             await using var connection = new MySqlConnection(_dbConnectionString);
 
@@ -150,13 +150,15 @@ public class Database
             {
                 if (activeUserMute.mute_type == user.mute_type)
                 {
-                    Server.NextFrame(() => _baseAdmin.ReplyToCommand(controller, "The user already has sound or chat disabled"));
+                    Server.NextFrame(() =>
+                        _baseAdmin.ReplyToCommand(controller, "The user already has sound or chat disabled"));
                     return;
                 }
 
                 if (activeUserMute.mute_type == 2 || user.mute_type == 2)
                 {
-                    Server.NextFrame(() => _baseAdmin.ReplyToCommand(controller, $"The user with the SteamId identifier {user.steamid} has already been muted in all channels."));
+                    Server.NextFrame(() => _baseAdmin.ReplyToCommand(controller,
+                        $"The user with the SteamId identifier {user.steamid} has already been muted in all channels."));
                     return;
                 }
 
@@ -181,7 +183,8 @@ public class Database
                 WHERE steamid = @steamid and mute_active = 1;
                 ", user);
 
-                Server.NextFrame(() => _baseAdmin.ReplyToCommand(controller, $"Player '{user.username} | [{user.steamid}]' mute has been updated."));
+                Server.NextFrame(() => _baseAdmin.ReplyToCommand(controller,
+                    $"Player '{user.username} | [{user.steamid}]' mute has been updated."));
                 return;
             }
 
@@ -190,7 +193,8 @@ public class Database
             VALUES (@mute_type, @admin_username, @admin_steamid, @username, @steamid64, @steamid, @reason, @unmute_reason, @admin_unlocked_username, @admin_unlocked_steamid, @start_mute_time, @end_mute_time, @mute_active);
             ", user);
 
-            Server.NextFrame(() => _baseAdmin.ReplyToCommand(controller, $"Player '{user.username} | [{user.steamid}]' is muted."));
+            Server.NextFrame(() =>
+                _baseAdmin.ReplyToCommand(controller, $"Player '{user.username} | [{user.steamid}]' is muted."));
         }
         catch (Exception e)
         {
@@ -198,13 +202,23 @@ public class Database
         }
     }
 
-    public async Task<string> AddAdmin(Admins admin)
+    public async Task AddAdmin(Admins admin, CCSPlayerController? player = null, bool fromMenu = false)
     {
         try
         {
             var isAdminExist = await IsUserAdmin(admin.steamid);
             if (isAdminExist != null)
-                return $"An administrator with the SteamId identifier {admin.steamid} already exists.";
+            {
+                _baseAdmin.PrintLogError("An administrator with the SteamId identifier {steamid} already exists.",
+                    admin.steamid);
+
+                if (fromMenu)
+                {
+                    if(player != null)
+                        _baseAdmin.PrintToChat(player, $"An administrator with the SteamId identifier {admin.steamid} already exists.");
+                }
+                return;
+            }
 
             await using var connection = new MySqlConnection(_dbConnectionString);
 
@@ -213,15 +227,19 @@ public class Database
                     miniadmin_admins (username, steamid, start_time, end_time, immunity, flags)
                 VALUES 
                     (@username, @steamid, @start_time, @end_time, @immunity, @flags);", admin);
-            
-            return $"Admin '{admin.username}[{admin.steamid}]' successfully added";
+
+            _baseAdmin.PrintLogInfo("Admin '{username}[{steamid}]' successfully added",
+                admin.username, admin.steamid);
+            if (fromMenu)
+            {
+                if (player != null)
+                    _baseAdmin.PrintToChat(player, $"Admin '{admin.username}[{admin.steamid}]' successfully added");
+            }
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
-
-        return string.Empty;
     }
 
     public async Task<string> DeleteExpiredAdminsAsync()
@@ -242,11 +260,11 @@ public class Database
                     await connection.ExecuteAsync(@"DELETE FROM miniadmin_admins WHERE steamid = @SteamId;",
                         new { SteamId = deleteAdmin.steamid });
 
-                    _baseAdmin.PrintToServer($"Admin {deleteAdmin.steamid} successfully deleted",
-                        ConsoleColor.DarkMagenta);
+                    _baseAdmin.PrintLogInfo("Admin {steamid} successfully deleted",
+                        deleteAdmin.steamid);
                 }
 
-                _baseAdmin.PrintToServer($"Expired admins successfully deleted", ConsoleColor.DarkMagenta);
+                _baseAdmin.PrintLogInfo("Expired admins successfully deleted");
             }
         }
         catch (Exception e)
@@ -266,7 +284,7 @@ public class Database
             await connection.ExecuteAsync(@"DELETE FROM miniadmin_admins WHERE steamid = @SteamId;",
                 new { SteamId = steamId });
 
-            _baseAdmin.PrintToServer($"Admin {steamId} successfully deleted", ConsoleColor.Green);
+            _baseAdmin.PrintLogInfo("Admin {steamId} successfully deleted", steamId);
         }
         catch (Exception e)
         {
@@ -331,7 +349,7 @@ public class Database
             {
                 if (user.mute_type is 2 && unmuteType is 0)
                     user.mute_type = 1;
-                else if(user.mute_type is 2 && unmuteType is 1)
+                else if (user.mute_type is 2 && unmuteType is 1)
                     user.mute_type = 0;
                 else if (user.mute_type == unmuteType)
                     user.mute_active = false;

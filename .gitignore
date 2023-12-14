@@ -56,3 +56,7 @@ Old/obj/MiniAdmin.csproj.nuget.g.props
 Old/obj/release/net7.0/.NETCoreApp,Version=v7.0.AssemblyAttributes.cs
 Old/obj/release/net7.0/MiniAdmin.AssemblyInfo.cs
 MiniAdmin/bin/release/net7.0/publish/BaseAdmin.zip
+MiniAdmin/obj/release/net7.0/BaseAdmin.AssemblyInfo.cs
+MiniAdmin/obj/Debug/net7.0/BaseAdmin.AssemblyInfo.cs
+MiniAdmin/obj/BaseAdmin.csproj.nuget.g.targets
+MiniAdmin/obj/BaseAdmin.csproj.nuget.g.props
