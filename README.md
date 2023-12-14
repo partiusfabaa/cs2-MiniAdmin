@@ -13,19 +13,18 @@ Adds basic administrator functions
 | Command | Description | Admin Flag |
 |---------|-------------|------------|
 | `css_admin`, `!admin` | opens the admin menu | - |
-| `css_who`, `!who` | Shows all players, admin, and game time (server console only) | - |
-| `css_slay "#userid or username"`, `!slay "userid"` | Allows you to kill a player | SLAY |
+| `css_ban "#userid or username" "time_minutes or 0 - permanently" [reason]` | Bans a player | BAN |
+| `css_unban "steamid" "reason"`, `!unban "steamid" [reason]` | Unbans the player | UNBAN |
+| `css_mute <#userid or username> <time_seconds> [reason]` | Turns off player voice chat | MUTE |
+| `css_unmute <steamid or #userid> [reason]` | Enables voice chat for the player | UNBAN |
+| `css_gag <#userid or username> <time_seconds> [reason]` | Disables player chat | MUTE |
+| `css_ungag <steamid or #userid> [reason]` | Enables player chat | UNBAN |
 | `css_slay "#userid or username"`, `!slay "userid"` | Allows you to kill a player | SLAY |
 | `css_kick "#userid or username"`, `!kick "userid"` | Allows you to kick a player from the server | KICK |
 | `css_map "name_map"`, `!map "name_map"` | Allows you to change the map on the server | MAP  |
-| `css_ban "#userid or username" "time_minutes or 0 - permanently" "reason"` | Bans a player | BAN |
-| `css_unban "steamid" "reason"`, `!unban "steamid" "reason"` | Unbans the player | UNBAN |
-| `css_slap <#userid or username> <damage>` | Slap a player | SLAY |
-| `css_gag <#userid or username> <time_seconds> <reason>` | Disables player chat | MUTE |
-| `css_ungag <steamid> <reason>` | Enables player chat | UNBAN |
-| `css_mute <#userid or username> <time_seconds> <reason>` | Turns off player voice chat | MUTE |
-| `css_unmute <steamid> <reason>` | Enables voice chat for the player | UNBAN |
 | `css_rcon <command>` | Changes cvar with rcon | RCON |
+| `css_slap <#userid or username> [damage]` | Slap a player | SLAY |
+| `css_who`, `!who` | Shows all players, admin, and game time | - |
 
 To write to admin chat, you need to open Team chat and write @MYTEXT
 
