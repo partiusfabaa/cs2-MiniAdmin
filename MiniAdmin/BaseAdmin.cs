@@ -476,7 +476,7 @@ public class BaseAdmin : BasePlugin
         ReplyToCommand(controller, msg);
     }
 
-    [CommandHelper(3, "<#userid or username> <time_seconds> [reason]")]
+    [CommandHelper(2, "<#userid or username> <time_seconds> [reason]")]
     [ConsoleCommand("css_ban", "ban")]
     public void OnCmdBan(CCSPlayerController? controller, CommandInfo command)
     {
@@ -527,7 +527,7 @@ public class BaseAdmin : BasePlugin
         });
     }
 
-    [CommandHelper(3, "<#userid or username> <time_seconds> [reason]")]
+    [CommandHelper(2, "<#userid or username> <time_seconds> [reason]")]
     [ConsoleCommand("css_mute", "mute")]
     public void OnCmdMute(CCSPlayerController? controller, CommandInfo command)
     {
@@ -767,7 +767,7 @@ public class BaseAdmin : BasePlugin
         });
     }
 
-    [CommandHelper(2, "<steamid> [reason]")]
+    [CommandHelper(1, "<steamid> [reason]")]
     [ConsoleCommand("css_unban", "unban")]
     public void OnCmdUnban(CCSPlayerController? controller, CommandInfo command)
     {
