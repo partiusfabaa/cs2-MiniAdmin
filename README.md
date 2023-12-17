@@ -9,7 +9,7 @@ Adds basic administrator functions.
 4. Unzip the archive and upload it to the game server
 
 ## Commands
-## For administrators:
+### For administrators:
 | Command | Description | Admin Flag |
 |---------|-------------|------------|
 | `css_admin`, `!admin` | opens the admin menu | - |
@@ -46,10 +46,9 @@ To write to admin chat, you need to open Team chat and write @MYTEXT
 	Vip  = o
 	Root = z
 
-## For chief administrators
-- `css_addadmin "username" "steamid" "immunity" "flags" "time_minutes or 0 - permanently"`, 
-- `!addadmin "username" "steamid" "immunity" "flags" "time_minutes or 0 - permanently"` - Adds an administrator(server console only)
-- `css_deleteadmin "steamid"`, `!deleteadmin "steamid"` - Removes the administrator(server console only) 
+## Access root
+- `css_addadmin "username" "steamid" "immunity" "flags" "time_minutes or 0 - permanently"`, `!addadmin "username" "steamid" "immunity" "flags" "time_minutes or 0 - permanently"` - Adds an administrator ***(server console only)***
+- `css_deleteadmin "steamid"`, `!deleteadmin "steamid"` - Removes the administrator ***(server console only)***
 
 (Example SteamId: STEAM_0:1:123456)
 
