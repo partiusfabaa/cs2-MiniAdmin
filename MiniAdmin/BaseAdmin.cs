@@ -46,14 +46,21 @@ public class BaseAdmin : BasePlugin
 
     public enum AdminFlag
     {
-        Ban = 'a',
-        Unban = 'b',
-        Mute = 'c',
-        AdminChat = 'd',
-        Slay = 'e',
-        Kick = 'f',
-        Map = 'g',
-        Rcon = 'h',
+        Reservation = 'a',
+        Generic  = 'b',
+        Kick  = 'c',
+        Ban  = 'd',
+        Unban  = 'e',
+        Slay = 'f',
+        Changemap  = 'g',
+        Cvar  = 'h',
+        Config = 'i',
+        Chat = 'j',
+        Vote = 'k',
+        Password = 'l',
+        Rcon = 'm', 
+        Cheats = 'n', 
+        Vip  = 'o',
         Root = 'z'
     }
 
@@ -115,7 +122,7 @@ public class BaseAdmin : BasePlugin
 
         if (msg.StartsWith('@'))
         {
-            if (CheckingForAdminAndFlag(controller, AdminFlag.AdminChat))
+            if (CheckingForAdminAndFlag(controller, AdminFlag.Chat))
             {
                 if (sendToAllAdmins)
                 {
@@ -125,7 +132,7 @@ public class BaseAdmin : BasePlugin
 
                 foreach (var player in Utilities.GetPlayers())
                 {
-                    if (!CheckingForAdminAndFlag(controller, AdminFlag.AdminChat)) continue;
+                    if (!CheckingForAdminAndFlag(controller, AdminFlag.Chat)) continue;
 
                     _adminChat.SendToAdminChat(player,
                         $" {ChatColors.Blue}{controller.PlayerName}{ChatColors.Default}: {msg.Trim('@')}");
@@ -138,7 +145,7 @@ public class BaseAdmin : BasePlugin
                 {
                     foreach (var player in Utilities.GetPlayers())
                     {
-                        if (!CheckingForAdminAndFlag(controller, AdminFlag.AdminChat)) continue;
+                        if (!CheckingForAdminAndFlag(controller, AdminFlag.Chat)) continue;
 
                         _adminChat.SendToAdminChatFromPlayer(player,
                             $" {ChatColors.Blue}{controller.PlayerName}{ChatColors.Default}: {msg.Trim('@')}");
@@ -412,7 +419,7 @@ public class BaseAdmin : BasePlugin
 
         var cmdArg = command.ArgString;
 
-        if (!CheckingForAdminAndFlag(controller, AdminFlag.Map)) return;
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Changemap )) return;
 
         foreach (var t in GetMapFromMaps())
         {
@@ -534,7 +541,7 @@ public class BaseAdmin : BasePlugin
     {
         var cmdArg = command.ArgString;
 
-        if (!CheckingForAdminAndFlag(controller, AdminFlag.Mute)) return;
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Generic)) return;
 
         var target = GetPlayerFromUserIdOrName(command.GetArg(1));
 
@@ -631,7 +638,7 @@ public class BaseAdmin : BasePlugin
     {
         var cmdArg = command.ArgString;
 
-        if (!CheckingForAdminAndFlag(controller, AdminFlag.Mute)) return;
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Generic)) return;
 
         var target = GetPlayerFromUserIdOrName(command.GetArg(1));
 

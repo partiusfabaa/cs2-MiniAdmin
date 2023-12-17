@@ -55,7 +55,7 @@ public class Menu
         });
         adminMenu.AddMenuOption("Mute players", (player, _) =>
         {
-            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Mute))
+            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Generic))
             {
                 CreateMuteMenu();
                 ChatMenus.OpenMenu(player, _muteMenu);
@@ -75,7 +75,7 @@ public class Menu
         });
         adminMenu.AddMenuOption("Change map", (player, _) =>
         {
-            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Map))
+            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Changemap))
             {
                 CreateChangeMapMenu();
                 ChatMenus.OpenMenu(player, _changeMapMenu);
