@@ -50,7 +50,7 @@ To write to admin chat, you need to open Team chat and write @MYTEXT
 - `css_addadmin "username" "steamid" "immunity" "flags" "time_minutes or 0 - permanently"`, `!addadmin "username" "steamid" "immunity" "flags" "time_minutes or 0 - permanently"` - Adds an administrator ***(server console only)***
 - `css_deleteadmin "steamid"`, `!deleteadmin "steamid"` - Removes the administrator ***(server console only)***
 
-(Example SteamId: STEAM_0:1:123456)
+***(Example SteamId: STEAM_0:1:123456)***
 
 ## Configs
 The configuration is generated automatically next to the plugin dll
