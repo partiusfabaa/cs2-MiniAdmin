@@ -22,8 +22,8 @@ namespace BaseAdmin;
 public class BaseAdmin : BasePlugin
 {
     public override string ModuleAuthor => "thesamefabius";
-    public override string ModuleName => "Mini Admin";
-    public override string ModuleVersion => "v1.0.4";
+    public override string ModuleName => "Mini Admin (Fork CSSharp Flags)";
+    public override string ModuleVersion => "v1.0.5";
 
     private static string _dbConnectionString = string.Empty;
 
