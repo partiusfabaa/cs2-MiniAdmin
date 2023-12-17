@@ -77,6 +77,7 @@ public class BaseAdmin : BasePlugin
         RegisterListener<Listeners.OnClientDisconnectPost>(slot =>
         {
             _muteUsers[slot + 1] = null;
+            _adminUsers[slot + 1] = null;
             _playerPlayTime[slot + 1] = DateTime.MinValue;
         });
 
