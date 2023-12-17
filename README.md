@@ -9,7 +9,7 @@ Adds basic administrator functions.
 4. Unzip the archive and upload it to the game server
 
 ## Commands
-### For administrators:
+### For administrators
 | Command | Description | Admin Flag |
 |---------|-------------|------------|
 | `css_admin`, `!admin` | opens the admin menu | - |
