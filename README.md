@@ -29,24 +29,24 @@ Adds basic administrator functions.
 To write to admin chat, you need to open Team chat and write @MYTEXT
 
 ## Flags:
-Reservation = a
-Generic  = b
-Kick  = c
-Ban  = d
-Unban  = e
-Slay = f
-Changemap  = g
-Cvar  = h
-Config = i
-Chat = j
-Vote = k
-Password = l
-Rcon = m
-Cheats = n
-Vip  = o
-Root = z
+	Reservation = a
+	Generic  = b
+	Kick  = c
+	Ban  = d
+	Unban  = e
+	Slay = f
+	Changemap  = g
+	Cvar  = h
+	Config = i
+	Chat = j
+	Vote = k
+	Password = l
+	Rcon = m
+	Cheats = n
+	Vip  = o
+	Root = z
 
-## For chief administrators:
+## For chief administrators
 `css_addadmin "username" "steamid" "immunity" "flags" "time_minutes or 0 - permanently"`, 
 
 `!addadmin "username" "steamid" "immunity" "flags" "time_minutes or 0 - permanently"` - Adds an administrator(server console only)
