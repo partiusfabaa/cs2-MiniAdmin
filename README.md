@@ -1,8 +1,6 @@
 # CS2 Mini Admin
 Adds basic administrator functions.
 
-### Note: Simple fork, with dumb modifications to `BaseAdmin for cssharp flags`. Use at your own expense, no support for this version
-
 ## Installation
 1. Install [CounterStrike Sharp](https://github.com/roflmuffin/CounterStrikeSharp) and [Metamod:Source](https://www.sourcemm.net/downloads.php/?branch=master)
 3. Download [MiniAdmin](https://github.com/partiusfabaa/cs2-MiniAdmin/releases/tag/v1.0.0)
