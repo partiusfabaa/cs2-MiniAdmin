@@ -878,7 +878,7 @@ public class BaseAdmin : BasePlugin
             UserID = dbConfig.Connection.User,
             Password = dbConfig.Connection.Password,
             Server = dbConfig.Connection.Host,
-            Port = 3306,
+            Port = (uint)dbConfig.Connection.Port,
         };
 
         Console.WriteLine("OK!");
@@ -904,13 +904,14 @@ public class BaseAdmin : BasePlugin
                 Host = "",
                 Database = "",
                 User = "",
-                Password = ""
+                Password = "",
+                Port = 3306
             }
         };
 
         var mapsConfig = Path.Combine(ModuleDirectory, "maps.txt");
         if (!File.Exists(mapsConfig))
-            File.WriteAllLines(mapsConfig, new[] { "de_dust2", "de_mirage" });
+            File.WriteAllLines(mapsConfig, new[] { "de_dust2", "ws:awp_lego_2" });
 
         File.WriteAllText(configPath,
             JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true }));
@@ -1077,6 +1078,7 @@ public class BaseAdminDb
     public required string Database { get; init; }
     public required string User { get; init; }
     public required string Password { get; init; }
+    public int Port { get; init; }
 }
 
 public class AdminData
