@@ -310,7 +310,6 @@ public class BaseAdmin : BasePlugin
             $"Admin '{player.PlayerName}' has issued a noclip to player '{(target == null ? $"{player.PlayerName}" : $"{target.PlayerName}")}'");
     }
 
-    [CommandHelper(1, "<accountid>", CommandUsage.CLIENT_ONLY)]
     [ConsoleCommand("css_refresh_admins")]
     public void OnCmdRefreshAdmins(CCSPlayerController? controller, CommandInfo command)
     {
@@ -321,7 +320,23 @@ public class BaseAdmin : BasePlugin
         {
             Server.NextFrame(() => LoadAdminUserAsync(players.AuthorizedSteamID, players.Slot));
         }
+
+        const string msg = "The list of administrators has been successfully reloaded";
+
+        ReplyToCommand(controller, msg);
+    }
+
+    [CommandHelper(1, "<steamid>")]
+    [ConsoleCommand("css_ma_reload_infractions")]
+    public void OnCmdReloadInfractions(CCSPlayerController? controller, CommandInfo command)
+    {
+        if (controller == null) return;
+        var target = GetPlayerFromSteamId(command.GetArg(1));
+
+        if (target == null) return;
         
+        Server.NextFrame(() => LoadAdminUserAsync(target.AuthorizedSteamID, target.Slot));
+
         const string msg = "The list of administrators has been successfully reloaded";
 
         ReplyToCommand(controller, msg);
@@ -903,6 +918,14 @@ public class BaseAdmin : BasePlugin
 
         Console.WriteLine("OK!");
         return builder.ConnectionString;
+    }
+
+    private static CCSPlayerController? GetPlayerFromSteamId(string steamId)
+    {
+        return Utilities.GetPlayers().FirstOrDefault(u =>
+            u.AuthorizedSteamID != null &&
+            (u.AuthorizedSteamID.SteamId2.ToString().Equals(steamId, StringComparison.OrdinalIgnoreCase) ||
+             u.AuthorizedSteamID.SteamId64.ToString().Equals(steamId, StringComparison.OrdinalIgnoreCase)));
     }
 
     private Config LoadConfig()
