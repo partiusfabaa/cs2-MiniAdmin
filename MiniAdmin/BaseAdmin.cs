@@ -196,22 +196,7 @@ public class BaseAdmin : BasePlugin
 
     private async Task OnClientAuthorizedAsync(int playerSlot, SteamID steamId)
     {
-        var userAdmin = await Database.IsUserAdmin(steamId.SteamId2);
-
-        if (userAdmin != null)
-        {
-            _adminUsers[playerSlot + 1] = new Admins
-            {
-                username = userAdmin.username,
-                steamid = userAdmin.steamid,
-                start_time = userAdmin.start_time,
-                end_time = userAdmin.end_time,
-                immunity = userAdmin.immunity,
-                flags = userAdmin.flags
-            };
-
-            //Server.NextFrame(() => Utilities.GetPlayerFromSlot(playerSlot).Clan = "[Admin]");
-        }
+        await LoadAdminUserAsync(steamId, playerSlot);
 
         var userMuted = await Database.GetActiveMuteAsync(steamId.SteamId2);
 
@@ -229,6 +214,24 @@ public class BaseAdmin : BasePlugin
             {
                 Server.NextFrame(() => Utilities.GetPlayerFromSlot(playerSlot).VoiceFlags = VoiceFlags.Muted);
             }
+        }
+    }
+
+    public async Task LoadAdminUserAsync(SteamID steamId, int playerSlot)
+    {
+        var userAdmin = await Database.IsUserAdmin(steamId.SteamId2);
+
+        if (userAdmin != null)
+        {
+            _adminUsers[playerSlot + 1] = new Admins
+            {
+                username = userAdmin.username,
+                steamid = userAdmin.steamid,
+                start_time = userAdmin.start_time,
+                end_time = userAdmin.end_time,
+                immunity = userAdmin.immunity,
+                flags = userAdmin.flags
+            };
         }
     }
 
@@ -305,6 +308,23 @@ public class BaseAdmin : BasePlugin
 
         PrintToChatAll(
             $"Admin '{player.PlayerName}' has issued a noclip to player '{(target == null ? $"{player.PlayerName}" : $"{target.PlayerName}")}'");
+    }
+
+    [CommandHelper(1, "<accountid>", CommandUsage.CLIENT_ONLY)]
+    [ConsoleCommand("css_refresh_admins")]
+    public void OnCmdRefreshAdmins(CCSPlayerController? controller, CommandInfo command)
+    {
+        if (controller != null && !CheckingForAdminAndFlag(controller, AdminFlag.Root)) return;
+
+        foreach (var players in Utilities.GetPlayers()
+                     .Where(u => u.AuthorizedSteamID != null && u.PlayerPawn.Value != null))
+        {
+            Server.NextFrame(() => LoadAdminUserAsync(players.AuthorizedSteamID, players.Slot));
+        }
+        
+        const string msg = "The list of administrators has been successfully reloaded";
+
+        ReplyToCommand(controller, msg);
     }
 
     [CommandHelper(1, "<command>", CommandUsage.CLIENT_ONLY)]
