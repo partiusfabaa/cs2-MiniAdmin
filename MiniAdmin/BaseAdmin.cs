@@ -23,7 +23,7 @@ public class BaseAdmin : BasePlugin
 {
     public override string ModuleAuthor => "thesamefabius";
     public override string ModuleName => "Mini Admin";
-    public override string ModuleVersion => "v1.0.4";
+    public override string ModuleVersion => "v1.0.5";
 
     private static string _dbConnectionString = string.Empty;
 
@@ -123,14 +123,13 @@ public class BaseAdmin : BasePlugin
                     return HookResult.Handled;
                 }
 
-                foreach (var player in Utilities.GetPlayers())
+                foreach (var player in Utilities.GetPlayers().Where(player => CheckingForAdminAndFlag(player, AdminFlag.AdminChat)))
                 {
-                    if (!CheckingForAdminAndFlag(controller, AdminFlag.AdminChat)) continue;
-
                     _adminChat.SendToAdminChat(player,
                         $" {ChatColors.Blue}{controller.PlayerName}{ChatColors.Default}: {msg.Trim('@')}");
-                    return HookResult.Handled;
                 }
+
+                return HookResult.Handled;
             }
             else
             {
@@ -210,7 +209,7 @@ public class BaseAdmin : BasePlugin
                 MuteActive = userMuted.mute_active
             };
 
-            if (userMuted.mute_type == (int)MuteType.Micro)
+            if (userMuted.mute_type is (int)MuteType.Micro or (int)MuteType.All)
             {
                 Server.NextFrame(() => Utilities.GetPlayerFromSlot(playerSlot).VoiceFlags = VoiceFlags.Muted);
             }
@@ -219,7 +218,7 @@ public class BaseAdmin : BasePlugin
 
     public async Task LoadAdminUserAsync(SteamID steamId, int playerSlot)
     {
-        var userAdmin = await Database.IsUserAdmin(steamId.SteamId2);
+        var userAdmin = await Database.GetAdminFromDb(steamId.SteamId2);
 
         if (userAdmin != null)
         {
@@ -241,25 +240,27 @@ public class BaseAdmin : BasePlugin
         {
             await using var connection = new MySqlConnection(_dbConnectionString);
 
-            var unbanUsers = await connection.QueryAsync<User>(
-                "SELECT * FROM miniadmin_bans WHERE end_ban_time <= @CurrentTime AND ban_active = 1 AND end_ban_time != 0",
-                new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
+            var unbanUsers = await connection.QueryFirstOrDefaultAsync<User>(
+                "SELECT * FROM miniadmin_bans WHERE steamid64 = @SteamId64 AND end_ban_time <= @CurrentTime AND ban_active = 1 AND end_ban_time != 0",
+                new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(), steamId.SteamId64 });
 
-            foreach (var user in unbanUsers)
+            if (unbanUsers != null)
             {
-                PrintLogInfo("Unban: {steamid}", user.steamid);
-                await Database.UnbanUser("Console", "Console", user.steamid, "The deadline has passed");
+                PrintLogInfo("Unban: {steamid}", unbanUsers.steamid);
+                await Database.UnbanUser("Console", "Console", unbanUsers.steamid, "The deadline has passed");
             }
 
-            var unmuteUsers = await connection.QueryAsync<User>(
-                "SELECT * FROM miniadmin_mute WHERE end_mute_time <= @CurrentTime AND mute_active = 1 AND end_mute_time != 0",
-                new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
+            var unmuteUsers = await connection.QueryFirstOrDefaultAsync<MuteUser>(
+                "SELECT * FROM miniadmin_mute WHERE steamid64 = @SteamId64 AND end_mute_time <= @CurrentTime AND mute_active = 1 AND end_mute_time != 0",
+                new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(), steamId.SteamId64 });
 
-            foreach (var user in unmuteUsers)
+            if (unmuteUsers != null)
             {
-                PrintLogInfo("Unmute: {steamid}", user.steamid);
-                await Database.UnmuteUser(-1, "Console", "Console", user.steamid, "The deadline has passed");
-                Server.NextFrame(() => player.VoiceFlags = VoiceFlags.Normal);
+                PrintLogInfo("Unmute: {steamid}", unmuteUsers.steamid);
+                await Database.UnmuteUser(-1, "Console", "Console", unmuteUsers.steamid, "The deadline has passed");
+                
+                if(unmuteUsers.mute_type is (int)MuteType.All or (int)MuteType.Micro)
+                    Server.NextFrame(() => player.VoiceFlags = VoiceFlags.Normal);
             }
 
             await Database.DeleteExpiredAdminsAsync();
@@ -283,8 +284,8 @@ public class BaseAdmin : BasePlugin
     [ConsoleCommand("css_noclip")]
     public void OnCmdNoclip(CCSPlayerController? controller, CommandInfo command)
     {
-        if (controller == null || !CheckingForAdminAndFlag(controller, AdminFlag.Root)) return;
-
+        if (controller ==null || !CheckingForAdminAndFlag(controller, AdminFlag.Root)) return;
+ 
         var msg = GetTextInsideQuotes(command.ArgString);
         if (msg.StartsWith('#'))
         {
@@ -327,7 +328,7 @@ public class BaseAdmin : BasePlugin
     }
 
     [CommandHelper(1, "<steamid>")]
-    [ConsoleCommand("css_ma_reload_infractions")]
+    [ConsoleCommand("css_reload_infractions")]
     public void OnCmdReloadInfractions(CCSPlayerController? controller, CommandInfo command)
     {
         if (controller == null) return;

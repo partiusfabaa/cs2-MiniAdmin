@@ -206,7 +206,7 @@ public class Database
     {
         try
         {
-            var isAdminExist = await IsUserAdmin(admin.steamid);
+            var isAdminExist = await GetAdminFromDb(admin.steamid);
             if (isAdminExist != null)
             {
                 _baseAdmin.PrintLogError("An administrator with the SteamId identifier {steamid} already exists.",
@@ -215,7 +215,7 @@ public class Database
                 if (fromMenu)
                 {
                     if(player != null)
-                        _baseAdmin.PrintToChat(player, $"An administrator with the SteamId identifier {admin.steamid} already exists.");
+                        Server.NextFrame(() => _baseAdmin.PrintToChat(player, $"An administrator with the SteamId identifier {admin.steamid} already exists."));
                 }
                 return;
             }
@@ -233,7 +233,9 @@ public class Database
             if (fromMenu)
             {
                 if (player != null)
-                    _baseAdmin.PrintToChat(player, $"Admin '{admin.username}[{admin.steamid}]' successfully added");
+                {
+                    Server.NextFrame(() => _baseAdmin.PrintToChat(player, $"Admin '{admin.username}[{admin.steamid}]' successfully added"));
+                }
             }
         }
         catch (Exception e)
@@ -423,7 +425,7 @@ public class Database
         return existingMute != null;
     }
 
-    public async Task<Admins?> IsUserAdmin(string steamId)
+    public async Task<Admins?> GetAdminFromDb(string steamId)
     {
         await using var connection = new MySqlConnection(_dbConnectionString);
 

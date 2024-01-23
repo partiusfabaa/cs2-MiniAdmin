@@ -207,7 +207,7 @@ public class Menu
                     timeMenu.AddMenuOption(split[0],
                         (playerController, _) =>
                         {
-                            Task.Run(() => AddBanFromMenu(playerController, target, option.Text, int.Parse(split[1])));
+                            AddBanFromMenu(playerController, target, option.Text, int.Parse(split[1]));
                         });
                 }
 
@@ -218,32 +218,29 @@ public class Menu
         ChatMenus.OpenMenu(player, reasonMenu);
     }
 
-    private async Task AddBanFromMenu(CCSPlayerController controller, CCSPlayerController target, string reason,
+    private void AddBanFromMenu(CCSPlayerController controller, CCSPlayerController target, string reason,
         int time)
     {
         var startBanTimeUnix = DateTime.UtcNow.GetUnixEpoch();
         var endBanTimeUnix = DateTime.UtcNow.AddSeconds(time).GetUnixEpoch();
 
-        Server.NextFrame(() =>
+        var msg = _baseAdmin.Database.AddBan(new User
         {
-            var msg = _baseAdmin.Database.AddBan(new User
-            {
-                admin_username = controller.PlayerName,
-                admin_steamid = new SteamID(controller.SteamID).SteamId2,
-                username = target.PlayerName,
-                steamid64 = target.SteamID,
-                steamid = new SteamID(target.SteamID).SteamId2,
-                reason = reason,
-                unban_reason = string.Empty,
-                admin_unlocked_username = string.Empty,
-                admin_unlocked_steamid = string.Empty,
-                start_ban_time = startBanTimeUnix,
-                end_ban_time = time == 0 ? time : endBanTimeUnix,
-                ban_active = true
-            }).Result;
-            _baseAdmin.KickClient($"{target.UserId}");
-            _baseAdmin.PrintToChatAll(msg);
-        });
+            admin_username = controller.PlayerName,
+            admin_steamid = new SteamID(controller.SteamID).SteamId2,
+            username = target.PlayerName,
+            steamid64 = target.SteamID,
+            steamid = new SteamID(target.SteamID).SteamId2,
+            reason = reason,
+            unban_reason = string.Empty,
+            admin_unlocked_username = string.Empty,
+            admin_unlocked_steamid = string.Empty,
+            start_ban_time = startBanTimeUnix,
+            end_ban_time = time == 0 ? time : endBanTimeUnix,
+            ban_active = true
+        }).Result;
+        _baseAdmin.KickClient($"{target.UserId}");
+        _baseAdmin.PrintToChatAll(msg);
     }
 
     private void CreateMuteMenu()
@@ -298,8 +295,7 @@ public class Menu
                     timeMenu.AddMenuOption(split[0],
                         (playerController, _) =>
                         {
-                            Task.Run(() =>
-                                AddMuteFromMenu(playerController, target, option.Text, int.Parse(split[1]), muteType));
+                            AddMuteFromMenu(playerController, target, option.Text, int.Parse(split[1]), muteType);
                         });
                 }
 
@@ -310,7 +306,7 @@ public class Menu
         ChatMenus.OpenMenu(player, reasonMenu);
     }
 
-    private async Task AddMuteFromMenu(CCSPlayerController controller, CCSPlayerController target, string reason,
+    private void AddMuteFromMenu(CCSPlayerController controller, CCSPlayerController target, string reason,
         int time, BaseAdmin.MuteType muteType)
     {
         var startMuteTimeUnix = DateTime.UtcNow.GetUnixEpoch();
@@ -401,7 +397,7 @@ public class Menu
                     immunityMenu.AddMenuOption(immunity,
                         (client, _) =>
                         {
-                            Task.Run(() => AddAdminFromMenu(client, target, int.Parse(immunity), int.Parse(split[1])));
+                            AddAdminFromMenu(client, target, int.Parse(immunity), int.Parse(split[1]));
                         });
                 }
 
@@ -412,13 +408,13 @@ public class Menu
         ChatMenus.OpenMenu(player, timeMenu);
     }
 
-    private async void AddAdminFromMenu(CCSPlayerController client, CCSPlayerController target,
+    private void AddAdminFromMenu(CCSPlayerController client, CCSPlayerController target,
         int immunity, int time)
     {
         var startTimeUnix = DateTime.UtcNow.GetUnixEpoch();
         var endTimeUnix = DateTime.UtcNow.AddSeconds(time).GetUnixEpoch();
 
-        await _baseAdmin.Database.AddAdmin(new Admins
+        _baseAdmin.Database.AddAdmin(new Admins
         {
             username = target.PlayerName,
             steamid = new SteamID(target.SteamID).SteamId2,
