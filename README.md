@@ -36,7 +36,7 @@ To write to admin chat, you need to open Team chat and write @MYTEXT
 
 ## A LOT OF THESE FLAGS DON'T WORK. THEY HAVE BEEN ADDED FOR THE FUTURE.
 ### FLAGS:
-    Reservation = a
+    Reservation = a (doesn't work)
     Generic  = b
     Kick  = c
     Ban  = d
@@ -44,13 +44,13 @@ To write to admin chat, you need to open Team chat and write @MYTEXT
     Slay = f
     Changemap  = g
     Cvar  = h
-    Config = i
+    Config = i (doesn't work)
     Chat = j
-    Vote = k
-    Password = l
+    Vote = k (doesn't work)
+    Password = l (doesn't work)
     Rcon = m
     Cheats = n
-    Vip  = o
+    Vip  = o (doesn't work)
     Root = z
 
 (example SteamId: STEAM_0:1:123456)
