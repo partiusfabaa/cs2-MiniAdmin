@@ -5,6 +5,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Menu;
+using static BaseAdmin.BaseAdmin;
 
 namespace BaseAdmin;
 
@@ -35,63 +36,51 @@ public class Menu
         var adminMenu = new ChatMenu(_baseAdmin.Prefix);
         adminMenu.AddMenuOption("Slay players", (player, _) =>
         {
-            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Slay))
+            if (_baseAdmin.CheckingForAdminAndFlag(player, AdminFlag.Slay))
             {
                 CreateSlayMenu();
                 ChatMenus.OpenMenu(player, _slayMenu);
             }
-            else
-                _baseAdmin.PrintToChat(player, "you do not have access to this command");
         });
         adminMenu.AddMenuOption("Kick players", (player, _) =>
         {
-            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Kick))
+            if (_baseAdmin.CheckingForAdminAndFlag(player, AdminFlag.Kick))
             {
                 CreateKickMenu();
                 ChatMenus.OpenMenu(player, _kickMenu);
             }
-            else
-                _baseAdmin.PrintToChat(player, "you do not have access to this command");
         });
         adminMenu.AddMenuOption("Mute players", (player, _) =>
         {
-            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Mute))
+            if (_baseAdmin.CheckingForAdminAndFlag(player, AdminFlag.Generic))
             {
                 CreateMuteMenu();
                 ChatMenus.OpenMenu(player, _muteMenu);
             }
-            else
-                _baseAdmin.PrintToChat(player, "you do not have access to this command");
         });
         adminMenu.AddMenuOption("Ban players", (player, _) =>
         {
-            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Ban))
+            if (_baseAdmin.CheckingForAdminAndFlag(player, AdminFlag.Ban))
             {
                 CreateBanMenu();
                 ChatMenus.OpenMenu(player, _banMenu);
             }
-            else
-                _baseAdmin.PrintToChat(player, "you do not have access to this command");
         });
         adminMenu.AddMenuOption("Change map", (player, _) =>
         {
-            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Map))
+            if (_baseAdmin.CheckingForAdminAndFlag(player, AdminFlag.Changemap))
             {
                 CreateChangeMapMenu();
                 ChatMenus.OpenMenu(player, _changeMapMenu);
             }
-            else
-                _baseAdmin.PrintToChat(player, "you do not have access to this command");
         });
         adminMenu.AddMenuOption("Add Admin", (player, _) =>
         {
-            if (_baseAdmin.CheckingForAdminAndFlag(player, BaseAdmin.AdminFlag.Root))
+            if (_baseAdmin.CheckingForAdminAndFlag(player, AdminFlag.Root))
             {
                 CreateAddAdminMenu();
                 ChatMenus.OpenMenu(player, _addAdminMenu);
             }
-            else
-                _baseAdmin.PrintToChat(player, "you do not have access to this command");
         });
 
         _baseAdmin.AddCommand("css_admin", "admin menu", (player, info) =>
@@ -270,16 +259,16 @@ public class Menu
     {
         var reasonMenu = new ChatMenu(_baseAdmin.Prefix);
         reasonMenu.AddMenuOption("Pick a type", (_, _) => { }, true);
-        reasonMenu.AddMenuOption("All", (_, _) => { SelectionReasonsForMute(player, target, BaseAdmin.MuteType.All); });
+        reasonMenu.AddMenuOption("All", (_, _) => { SelectionReasonsForMute(player, target, MuteType.All); });
         reasonMenu.AddMenuOption("Mute",
-            (_, _) => { SelectionReasonsForMute(player, target, BaseAdmin.MuteType.Micro); });
+            (_, _) => { SelectionReasonsForMute(player, target, MuteType.Micro); });
         reasonMenu.AddMenuOption("Gag",
-            (_, _) => { SelectionReasonsForMute(player, target, BaseAdmin.MuteType.Chat); });
+            (_, _) => { SelectionReasonsForMute(player, target, MuteType.Chat); });
         ChatMenus.OpenMenu(player, reasonMenu);
     }
 
     private void SelectionReasonsForMute(CCSPlayerController player, CCSPlayerController target,
-        BaseAdmin.MuteType muteType)
+        MuteType muteType)
     {
         var reasonMenu = new ChatMenu(_baseAdmin.Prefix);
         reasonMenu.AddMenuOption("Pick a reason", (_, _) => { }, true);
@@ -307,7 +296,7 @@ public class Menu
     }
 
     private void AddMuteFromMenu(CCSPlayerController controller, CCSPlayerController target, string reason,
-        int time, BaseAdmin.MuteType muteType)
+        int time, MuteType muteType)
     {
         var startMuteTimeUnix = DateTime.UtcNow.GetUnixEpoch();
         var endMuteTimeUnix = DateTime.UtcNow.AddSeconds(time).GetUnixEpoch();
@@ -331,7 +320,7 @@ public class Menu
                 mute_active = true
             }, controller == null ? null : controller);
 
-            if (muteType is BaseAdmin.MuteType.Micro or BaseAdmin.MuteType.All)
+            if (muteType is MuteType.Micro or MuteType.All)
                 target.VoiceFlags = VoiceFlags.Muted;
         });
 

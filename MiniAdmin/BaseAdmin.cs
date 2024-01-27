@@ -9,6 +9,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
@@ -46,14 +47,21 @@ public class BaseAdmin : BasePlugin
 
     public enum AdminFlag
     {
-        Ban = 'a',
-        Unban = 'b',
-        Mute = 'c',
-        AdminChat = 'd',
-        Slay = 'e',
-        Kick = 'f',
-        Map = 'g',
-        Rcon = 'h',
+        Reservation = 'a',
+        Generic  = 'b',
+        Kick  = 'c',
+        Ban  = 'd',
+        Unban  = 'e',
+        Slay = 'f',
+        Changemap  = 'g',
+        Cvar  = 'h',
+        Config = 'i',
+        Chat = 'j',
+        Vote = 'k',
+        Password = 'l',
+        Rcon = 'm', 
+        Cheats = 'n', 
+        Vip  = 'o',
         Root = 'z'
     }
 
@@ -115,7 +123,7 @@ public class BaseAdmin : BasePlugin
 
         if (msg.StartsWith('@'))
         {
-            if (CheckingForAdminAndFlag(controller, AdminFlag.AdminChat))
+            if (CheckingForAdminAndFlag(controller, AdminFlag.Chat))
             {
                 if (sendToAllAdmins)
                 {
@@ -123,7 +131,8 @@ public class BaseAdmin : BasePlugin
                     return HookResult.Handled;
                 }
 
-                foreach (var player in Utilities.GetPlayers().Where(player => CheckingForAdminAndFlag(player, AdminFlag.AdminChat)))
+                foreach (var player in Utilities.GetPlayers()
+                             .Where(player => CheckingForAdminAndFlag(player, AdminFlag.Chat)))
                 {
                     _adminChat.SendToAdminChat(player,
                         $" {ChatColors.Blue}{controller.PlayerName}{ChatColors.Default}: {msg.Trim('@')}");
@@ -137,7 +146,7 @@ public class BaseAdmin : BasePlugin
                 {
                     foreach (var player in Utilities.GetPlayers())
                     {
-                        if (!CheckingForAdminAndFlag(controller, AdminFlag.AdminChat)) continue;
+                        if (!CheckingForAdminAndFlag(controller, AdminFlag.Chat)) continue;
 
                         _adminChat.SendToAdminChatFromPlayer(player,
                             $" {ChatColors.Blue}{controller.PlayerName}{ChatColors.Default}: {msg.Trim('@')}");
@@ -258,8 +267,8 @@ public class BaseAdmin : BasePlugin
             {
                 PrintLogInfo("Unmute: {steamid}", unmuteUsers.steamid);
                 await Database.UnmuteUser(-1, "Console", "Console", unmuteUsers.steamid, "The deadline has passed");
-                
-                if(unmuteUsers.mute_type is (int)MuteType.All or (int)MuteType.Micro)
+
+                if (unmuteUsers.mute_type is (int)MuteType.All or (int)MuteType.Micro)
                     Server.NextFrame(() => player.VoiceFlags = VoiceFlags.Normal);
             }
 
@@ -284,8 +293,8 @@ public class BaseAdmin : BasePlugin
     [ConsoleCommand("css_noclip")]
     public void OnCmdNoclip(CCSPlayerController? controller, CommandInfo command)
     {
-        if (controller ==null || !CheckingForAdminAndFlag(controller, AdminFlag.Root)) return;
- 
+        if (controller == null || !CheckingForAdminAndFlag(controller, AdminFlag.Cheats)) return;
+
         var msg = GetTextInsideQuotes(command.ArgString);
         if (msg.StartsWith('#'))
         {
@@ -311,43 +320,172 @@ public class BaseAdmin : BasePlugin
             $"Admin '{player.PlayerName}' has issued a noclip to player '{(target == null ? $"{player.PlayerName}" : $"{target.PlayerName}")}'");
     }
 
-    [ConsoleCommand("css_refresh_admins")]
-    public void OnCmdRefreshAdmins(CCSPlayerController? controller, CommandInfo command)
-    {
-        if (controller != null && !CheckingForAdminAndFlag(controller, AdminFlag.Root)) return;
+    // [ConsoleCommand("css_refresh_admins")]
+    // public void OnCmdRefreshAdmins(CCSPlayerController? controller, CommandInfo command)
+    // {
+    //     if (controller != null && !CheckingForAdminAndFlag(controller, AdminFlag.Root)) return;
+    //
+    //     foreach (var players in Utilities.GetPlayers()
+    //                  .Where(u => u.AuthorizedSteamID != null && u.PlayerPawn.Value != null))
+    //     {
+    //         Server.NextFrame(() => LoadAdminUserAsync(players.AuthorizedSteamID, players.Slot));
+    //     }
+    //
+    //     const string msg = "The list of administrators has been successfully reloaded";
+    //
+    //     ReplyToCommand(controller, msg);
+    // }
+    //
+    // [CommandHelper(1, "<steamid>")]
+    // [ConsoleCommand("css_reload_infractions")]
+    // public void OnCmdReloadInfractions(CCSPlayerController? controller, CommandInfo command)
+    // {
+    //     if (controller == null) return;
+    //     var target = GetPlayerFromSteamId(command.GetArg(1));
+    //
+    //     if (target == null) return;
+    //
+    //     Server.NextFrame(() => LoadAdminUserAsync(target.AuthorizedSteamID, target.Slot));
+    //
+    //     const string msg = "The list of administrators has been successfully reloaded";
+    //
+    //     ReplyToCommand(controller, msg);
+    // }
 
-        foreach (var players in Utilities.GetPlayers()
-                     .Where(u => u.AuthorizedSteamID != null && u.PlayerPawn.Value != null))
+    [CommandHelper(1, "<#userid or username> <ct/tt/spec/none> [-k]", CommandUsage.CLIENT_ONLY)]
+    [ConsoleCommand("css_team")]
+    public void OnCmdChangeTeam(CCSPlayerController? controller, CommandInfo command)
+    {
+        if (controller == null || !CheckingForAdminAndFlag(controller, AdminFlag.Kick)) return;
+
+        var target = GetPlayerFromUserIdOrName(command.GetArg(1));
+
+        if (target == null)
         {
-            Server.NextFrame(() => LoadAdminUserAsync(players.AuthorizedSteamID, players.Slot));
+            ReplyToCommand(controller, "Player not found");
+            return;
         }
 
-        const string msg = "The list of administrators has been successfully reloaded";
+        if (command.ArgCount >= 3)
+        {
+            var team = GetTeam(command.GetArg(2));
 
-        ReplyToCommand(controller, msg);
+            if (command.ArgCount is 4)
+                target.ChangeTeam(team);
+            else
+                target.SwitchTeam(team);
+
+            PrintToChatAll($"An administrator has moved a player {target.PlayerName} to another team");
+        }
     }
 
-    [CommandHelper(1, "<steamid>")]
-    [ConsoleCommand("css_reload_infractions")]
-    public void OnCmdReloadInfractions(CCSPlayerController? controller, CommandInfo command)
+    private CsTeam GetTeam(string name)
     {
-        if (controller == null) return;
-        var target = GetPlayerFromSteamId(command.GetArg(1));
-
-        if (target == null) return;
-        
-        Server.NextFrame(() => LoadAdminUserAsync(target.AuthorizedSteamID, target.Slot));
-
-        const string msg = "The list of administrators has been successfully reloaded";
-
-        ReplyToCommand(controller, msg);
+        return name switch
+        {
+            "ct" => CsTeam.CounterTerrorist,
+            "t" => CsTeam.Terrorist,
+            "tt" => CsTeam.Terrorist,
+            "none" => CsTeam.None,
+            _ => CsTeam.Spectator
+        };
     }
 
+    [CommandHelper(1, "<text>", CommandUsage.CLIENT_ONLY)]
+    [ConsoleCommand("css_say")]
+    public void OnCmdSay(CCSPlayerController? controller, CommandInfo command)
+    {
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Chat)) return;
+
+        PrintToChatAll($"{ChatColors.Blue}Admin\x01: {command.ArgString}");
+    }
+
+    [CommandHelper(1, "<#userid or username> <message>", CommandUsage.CLIENT_ONLY)]
+    [ConsoleCommand("css_psay")]
+    public void OnCmdPSay(CCSPlayerController? controller, CommandInfo command)
+    {
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Chat)) return;
+
+        var target = GetPlayerFromUserIdOrName(command.GetArg(1));
+
+        if (target == null)
+        {
+            ReplyToCommand(controller, "Player not found");
+            return;
+        }
+
+        PrintToChat(target,
+            $"Private message from - {ChatColors.Blue}{(controller == null ? "Console" : controller.PlayerName)}\x01: {command.ArgString}");
+        ReplyToCommand(controller,
+            $"Private message from - {ChatColors.Blue}{(controller == null ? "Console" : controller.PlayerName)}\x01: {command.ArgString}");
+    }
+
+
+    [CommandHelper(1, "<text>", CommandUsage.CLIENT_ONLY)]
+    [ConsoleCommand("css_csay")]
+    public void OnCmdCSay(CCSPlayerController? controller, CommandInfo command)
+    {
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Chat)) return;
+
+        PrintToCenterAll($"{ChatColors.Blue}Admin\x01: {command.ArgString}");
+    }
+
+    [CommandHelper(usage: "[#userid or name]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    [ConsoleCommand("css_god")]
+    public void OnCmdGod(CCSPlayerController? controller, CommandInfo command)
+    {
+        if (controller == null || !CheckingForAdminAndFlag(controller, AdminFlag.Cheats)) return;
+
+        if (command.ArgCount >= 2)
+        {
+            var target = GetPlayerFromUserIdOrName(command.GetArg(1));
+
+            if (target == null)
+            {
+                ReplyToCommand(controller, "Player not found");
+                return;
+            }
+
+            var targetPawn = target.PlayerPawn.Value;
+            if (targetPawn == null) return;
+
+            targetPawn.TakesDamage ^= true;
+            PrintToChat(target, "The administrator has given you immortality");
+        }
+        else
+        {
+            var playerPawn = controller.PlayerPawn.Value;
+            if (playerPawn == null) return;
+            playerPawn.TakesDamage ^= true;
+            PrintToChat(controller, "You've established immortality");
+        }
+    }
+
+    [CommandHelper(2, "<cvar> <value>", CommandUsage.CLIENT_ONLY)]
+    [ConsoleCommand("css_cvar")]
+    public void OnCmdCvar(CCSPlayerController? controller, CommandInfo command)
+    {
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Cvar)) return;
+
+        var cvar = command.GetArg(1);
+        var value = command.GetArg(2);
+
+        var conVar = ConVar.Find(cvar);
+
+        if (conVar == null)
+        {
+            ReplyToCommand(controller, $"ConVar: {cvar} not found");
+            return;
+        }
+        
+        conVar.SetValue(value);
+    }
+    
     [CommandHelper(1, "<command>", CommandUsage.CLIENT_ONLY)]
     [ConsoleCommand("css_rcon")]
     public void OnCmdRcon(CCSPlayerController? controller, CommandInfo command)
     {
-        if (controller == null || !CheckingForAdminAndFlag(controller, AdminFlag.Rcon)) return;
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Rcon)) return;
 
         Server.ExecuteCommand(command.ArgString);
     }
@@ -448,7 +586,7 @@ public class BaseAdmin : BasePlugin
 
         var cmdArg = command.ArgString;
 
-        if (!CheckingForAdminAndFlag(controller, AdminFlag.Map)) return;
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Changemap)) return;
 
         foreach (var t in GetMapFromMaps())
         {
@@ -570,7 +708,7 @@ public class BaseAdmin : BasePlugin
     {
         var cmdArg = command.ArgString;
 
-        if (!CheckingForAdminAndFlag(controller, AdminFlag.Mute)) return;
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Generic)) return;
 
         var target = GetPlayerFromUserIdOrName(command.GetArg(1));
 
@@ -590,7 +728,7 @@ public class BaseAdmin : BasePlugin
 
         if (target.VoiceFlags.HasFlag(VoiceFlags.Muted))
         {
-            ReplyToCommand(controller, $"Player \x02'{target.PlayerName}'\x08 has already had his microphone cut off");
+            ReplyToCommand(controller, $"Player \x02'{target.PlayerName}'\x01 has already had his microphone cut off");
             return;
         }
 
@@ -667,7 +805,7 @@ public class BaseAdmin : BasePlugin
     {
         var cmdArg = command.ArgString;
 
-        if (!CheckingForAdminAndFlag(controller, AdminFlag.Mute)) return;
+        if (!CheckingForAdminAndFlag(controller, AdminFlag.Generic)) return;
 
         var target = GetPlayerFromUserIdOrName(command.GetArg(1));
 
@@ -1076,12 +1214,16 @@ public class BaseAdmin : BasePlugin
 
     public void PrintToChat(CCSPlayerController controller, string msg)
     {
-        controller.PrintToChat($"\x08[\x0C Admin \x08] {msg}");
+        controller.PrintToChat($"[ {ChatColors.Blue}Admin \x01] {msg}");
     }
 
+    public void PrintToCenterAll(string msg)
+    {
+        VirtualFunctions.ClientPrintAll(HudDestination.Center, $"Admin: {msg}", 0, 0, 0, 0);
+    }
     public void PrintToChatAll(string msg)
     {
-        Server.PrintToChatAll($"\x08[\x0C Admin \x08] {msg}");
+        Server.PrintToChatAll($"[ {ChatColors.Blue}Admin \x01] {msg}");
     }
 
     private void PrintToConsole(CCSPlayerController client, string msg)
