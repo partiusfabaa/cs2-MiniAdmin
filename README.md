@@ -13,30 +13,44 @@ Adds basic administrator functions
 | Command | Description | Admin Flag |
 |---------|-------------|------------|
 | `css_admin`, `!admin` | opens the admin menu | - |
-| `css_ban "#userid or username" "time_minutes or 0 - permanently" [reason]` | Bans a player | BAN |
-| `css_unban "steamid" "reason"`, `!unban "steamid" [reason]` | Unbans the player | UNBAN |
-| `css_mute <#userid or username> <time_seconds> [reason]` | Turns off player voice chat | MUTE |
-| `css_unmute <steamid or #userid> [reason]` | Enables voice chat for the player | UNBAN |
-| `css_gag <#userid or username> <time_seconds> [reason]` | Disables player chat | MUTE |
-| `css_ungag <steamid or #userid> [reason]` | Enables player chat | UNBAN |
-| `css_slay "#userid or username"`, `!slay "userid"` | Allows you to kill a player | SLAY |
-| `css_kick "#userid or username"`, `!kick "userid"` | Allows you to kick a player from the server | KICK |
-| `css_map "name_map"`, `!map "name_map"` | Allows you to change the map on the server | MAP  |
-| `css_rcon <command>` | Changes cvar with rcon | RCON |
-| `css_slap <#userid or username> [damage]` | Slap a player | SLAY |
+| `css_ban "#userid or username" "time_minutes or 0 - permanently" [reason]` | Bans a player | Ban |
+| `css_unban "steamid" "reason"`, `!unban "steamid" [reason]` | Unbans the player | Unban |
+| `css_mute <#userid or username> <time_seconds> [reason]` | Turns off player voice chat | Generic |
+| `css_unmute <steamid or #userid> [reason]` | Enables voice chat for the player | Unban |
+| `css_gag <#userid or username> <time_seconds> [reason]` | Disables player chat | Generic |
+| `css_ungag <steamid or #userid> [reason]` | Enables player chat | Unban |
+| `css_slay "#userid or username"`, `!slay "userid"` | Allows you to kill a player | Slay |
+| `css_kick "#userid or username"`, `!kick "userid"` | Allows you to kick a player from the server | Kick |
+| `css_map "name_map"`, `!map "name_map"` | Allows you to change the map on the server | ChangeMap |
+| `css_team <#userid or username> <ct/tt/spec/none> [-k]` | Allows you to transfer a player for another team, if you write `-k` to the team the player will die | Kick |
+| `css_say <message>` | Allows you to send a message to the chat room | Chat |
+| `css_csay <message>` | Allows you to send a message to the CENTER | Chat |
+| `css_psay <#userid or username> <message>` | Allows you to send a private message | Chat |
+| `css_cvar <cvar> <value>` | Change cvar value | Cvar |
+| `css_god [#userid or username]` | Allows you to grant immortality, if you don't write userid or name, it will be granted to the one who wrote it. | Cheats |
+| `css_rcon <command>` | Changes cvar with rcon | Rcon |
+| `css_slap <#userid or username> [damage]` | Slap a player | Slay |
 | `css_who`, `!who` | Shows all players, admin, and game time | - |
 
 To write to admin chat, you need to open Team chat and write @MYTEXT
 
+## A LOT OF THESE FLAGS DON'T WORK. THEY HAVE BEEN ADDED FOR THE FUTURE.
 ### FLAGS:
-    Ban = a
-    Unban = b
-    Mute = c
-    AdminChat = d
-    Slay = e
-    Kick = f
-    Map = g
-    Rcon = h
+    Reservation = a
+    Generic  = b
+    Kick  = c
+    Ban  = d
+    Unban  = e
+    Slay = f
+    Changemap  = g
+    Cvar  = h
+    Config = i
+    Chat = j
+    Vote = k
+    Password = l
+    Rcon = m
+    Cheats = n
+    Vip  = o
     Root = z
 
 (example SteamId: STEAM_0:1:123456)
