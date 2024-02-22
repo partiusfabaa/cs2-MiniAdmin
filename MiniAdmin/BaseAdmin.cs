@@ -937,20 +937,25 @@ public class BaseAdmin : BasePlugin
     [ConsoleCommand("css_addadmin")]
     public void OnCmdAddAdmin(CCSPlayerController? controller, CommandInfo command)
     {
+        var username = command.GetArg(1);
+        var steamId = command.GetArg(2);
+        var immunity = command.GetArg(3);
+        var flags = command.GetArg(4);
+        
         var startTimeUnix = DateTime.UtcNow.GetUnixEpoch();
         var endTimeUnix = DateTime.UtcNow.AddSeconds(int.TryParse(command.GetArg(5), out var endTime) ? endTime : 3600)
             .GetUnixEpoch();
-
+        
         Server.NextFrame(() =>
         {
             Database.AddAdmin(new Admins
             {
-                username = command.GetArg(1),
-                steamid = command.GetArg(2),
+                username = username,
+                steamid = steamId,
                 start_time = startTimeUnix,
                 end_time = endTimeUnix,
-                immunity = int.TryParse(command.GetArg(3), out var immunity) ? immunity : 10,
-                flags = command.GetArg(4)
+                immunity = int.TryParse(immunity, out var i) ? i : 10,
+                flags = flags
             }, controller);
         });
     }
