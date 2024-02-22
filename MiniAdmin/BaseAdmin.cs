@@ -1047,7 +1047,7 @@ public class BaseAdmin : BasePlugin
         UpdateUserMuteLocal(target, endMuteTime, endMuteTimeUnix, (int)MuteType.All);
     }
     
-    [CommandHelper(1, "<steamid | #userid> [reason]")]
+    [CommandHelper(1, "<#userid or steamid> [reason]")]
     [ConsoleCommand("css_unsilence", "unmute")]
     public void OnCmdUnSilence(CCSPlayerController? controller, CommandInfo command)
     {
