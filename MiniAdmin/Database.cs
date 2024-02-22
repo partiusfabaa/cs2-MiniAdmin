@@ -214,9 +214,11 @@ public class Database
 
                 if (fromMenu)
                 {
-                    if(player != null)
-                        Server.NextFrame(() => _baseAdmin.PrintToChat(player, $"An administrator with the SteamId identifier {admin.steamid} already exists."));
+                    if (player != null)
+                        Server.NextFrame(() => _baseAdmin.PrintToChat(player,
+                            $"An administrator with the SteamId identifier {admin.steamid} already exists."));
                 }
+
                 return;
             }
 
@@ -234,7 +236,9 @@ public class Database
             {
                 if (player != null)
                 {
-                    Server.NextFrame(() => _baseAdmin.PrintToChat(player, $"Admin '{admin.username}[{admin.steamid}]' successfully added"));
+                    Server.NextFrame(() =>
+                        _baseAdmin.PrintToChat(player,
+                            $"Admin '{admin.username}[{admin.steamid}]' successfully added"));
                 }
             }
         }
@@ -243,6 +247,72 @@ public class Database
             Console.WriteLine(e);
         }
     }
+
+    public async Task UpdateAdmin(Admins admin)
+    {
+        try
+        {
+            var existingAdmin = await GetAdminFromDb(admin.steamid);
+            if (existingAdmin == null)
+            {
+                _baseAdmin.PrintLogError("Administrator with SteamId {steamid} does not exist.", admin.steamid);
+                return;
+            }
+
+            var hasChanges = false;
+
+            if (existingAdmin.username != admin.username && admin.username is not ("-" or "-s"))
+            {
+                existingAdmin.username = admin.username;
+                hasChanges = true;
+            }
+
+            if (existingAdmin.end_time != admin.end_time && admin.end_time is not -1)
+            {
+                existingAdmin.end_time = admin.end_time;
+                hasChanges = true;
+            }
+
+            if (existingAdmin.immunity != admin.immunity && admin.immunity is not -1)
+            {
+                existingAdmin.immunity = admin.immunity;
+                hasChanges = true;
+            }
+
+            if (existingAdmin.flags != admin.flags && admin.flags is not ("-" or "-s"))
+            {
+                existingAdmin.flags = admin.flags;
+                hasChanges = true;
+            }
+
+            if (!hasChanges)
+            {
+                _baseAdmin.PrintLogInfo("No changes detected for administrator '{username}[{steamid}]'",
+                    existingAdmin.username, existingAdmin.steamid);
+                return;
+            }
+
+            await using var connection = new MySqlConnection(_dbConnectionString);
+
+            await connection.ExecuteAsync(@"
+            UPDATE miniadmin_admins 
+            SET 
+                username = @username, 
+                end_time = @end_time, 
+                immunity = @immunity, 
+                flags = @flags
+            WHERE 
+                steamid = @steamid;", existingAdmin);
+
+            _baseAdmin.PrintLogInfo("Administrator '{username}[{steamid}]' successfully updated",
+                existingAdmin.username, existingAdmin.steamid);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
 
     public async Task<string> DeleteExpiredAdminsAsync()
     {

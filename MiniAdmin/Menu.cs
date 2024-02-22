@@ -150,7 +150,8 @@ public class Menu
                     return;
                 }
 
-                _baseAdmin.KickClient($"{target.UserId}");
+                //_baseAdmin.KickClient($"{target.UserId}");
+                target.Kick("Kick");
 
                 _baseAdmin.PrintToChatAll($"{controller.PlayerName}: Player '{target.PlayerName}' has been kicked");
             });
@@ -228,7 +229,8 @@ public class Menu
             end_ban_time = time == 0 ? time : endBanTimeUnix,
             ban_active = true
         }).Result;
-        _baseAdmin.KickClient($"{target.UserId}");
+        //_baseAdmin.KickClient($"{target.UserId}");
+        target.Kick("Ban");
         _baseAdmin.PrintToChatAll(msg);
     }
 
