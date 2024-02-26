@@ -941,10 +941,10 @@ public class BaseAdmin : BasePlugin
         var steamId = command.GetArg(2);
         var immunity = command.GetArg(3);
         var flags = command.GetArg(4);
-        
+
+        var time = int.TryParse(command.GetArg(5), out var endTime) ? endTime : 3600;
         var startTimeUnix = DateTime.UtcNow.GetUnixEpoch();
-        var endTimeUnix = DateTime.UtcNow.AddSeconds(int.TryParse(command.GetArg(5), out var endTime) ? endTime : 3600)
-            .GetUnixEpoch();
+        var endTimeUnix = DateTime.UtcNow.AddSeconds(time).GetUnixEpoch();
         
         Server.NextFrame(() =>
         {
@@ -953,7 +953,7 @@ public class BaseAdmin : BasePlugin
                 username = username,
                 steamid = steamId,
                 start_time = startTimeUnix,
-                end_time = endTimeUnix,
+                end_time = time == 0 ? 0 : endTimeUnix,
                 immunity = int.TryParse(immunity, out var i) ? i : 10,
                 flags = flags
             }, controller);
