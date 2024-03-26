@@ -71,7 +71,8 @@ database.json
     "Host": 	"HOST",
     "Database": "NAME_DATABASE",
     "User": 	"NAME_USER",
-    "Password": "PASSWORD"
+    "Password": "PASSWORD",
+    "Port":	3306
   }
 }
 
