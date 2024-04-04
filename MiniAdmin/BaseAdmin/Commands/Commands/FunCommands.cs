@@ -24,7 +24,7 @@ public class FunCommands
         {
             if (!Utils.GetPlayer(command.GetArg(1), out var target))
             {
-                _baseAdmin.ReplyToCommand(controller, _baseAdmin.Localizer["player_not_found"]);
+                _baseAdmin.ReplyToCommand(controller, _baseAdmin.Localizer["player.not_found"]);
                 return;
             }
 

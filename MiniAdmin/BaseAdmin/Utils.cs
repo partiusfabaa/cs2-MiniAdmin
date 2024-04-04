@@ -78,4 +78,14 @@ public static class Utils
         player = players.FirstOrDefault(u => u.PlayerName.Contains(id));
         return player != null;
     }
+
+    public static CCSPlayerController? GetPlayer(string userId)
+    {
+        if (GetPlayer(userId, out var player))
+        {
+            return player;
+        }
+
+        return null;
+    }
 }

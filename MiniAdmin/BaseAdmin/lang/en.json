@@ -22,9 +22,10 @@
   "menu.lock.ban_player": "Ban Player",
   "menu.lock.mute_player": "Mute Player",
 
-  //players
+  //player
   "player.kick": "Admin {blue}{0}{default} kicked player {blue}{1}",
   "player.kill": "Admin {blue}{0}{default} killed player {blue}{1}",
+  "player.not_found": "Player not found",
 
   //ban
   "ban_user_already_banned": "User with SteamId {0} is already banned.",
@@ -52,7 +53,6 @@
   //other
   "not_have_access": "You do not have access to this command",
   "private_message": "Private message from - {blue}{0}{default}: {1}",
-  "player_not_found": "Player not found",
   "move_team": "Admin moved player {0} to another team",
   "give_noclip": "Admin '{0}' gave noclip to player '{1}'",
   "give_god_target": "Admin gave you god mode",

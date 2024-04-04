@@ -22,9 +22,10 @@
   "menu.lock.ban_player": "Забанить игрока",
   "menu.lock.mute_player": "Замутить игрока",
   
-  //players
+  //player
   "player.kick": "Администратор {blue}{0}{default} кикнул игрока {blue}{1}",
   "player.kill": "Администратор {blue}{0}{default} убил игрока {blue}{1}",
+  "player.not_found": "Игрок не найден",
   
   //ban
   "ban_user_already_banned": "Пользователь с идентификатором SteamId {0} уже забанен.",
@@ -52,7 +53,6 @@
   //othjer
   "not_have_access": "У вас нет доступа к этой команде",
   "private_message": "Приватное сообщение от - {blue}{0}{default}: {1}",
-  "player_not_found": "Игрок не найден",
   "move_team": "Администратор переместил игрока {0} в другую команду",
   "give_noclip": "Администратор '{0}' выдал noclip игроку '{1}'",
   "give_god_target": "Администратор дал вам бессмертие",
