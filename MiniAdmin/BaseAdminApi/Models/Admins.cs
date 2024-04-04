@@ -1,6 +1,6 @@
-namespace BaseAdmin;
+namespace BaseAdminApi.Models;
 
-public class Admins
+public class Admin
 {
     public required string username { get; set; }
     public required string steamid { get; set; }
