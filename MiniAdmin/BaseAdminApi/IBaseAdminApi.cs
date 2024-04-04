@@ -12,11 +12,12 @@ namespace BaseAdminApi;
 public interface IBaseAdminApi
 {
     public static readonly PluginCapability<IBaseAdminApi?> Capability = new("baseadmin");
-    
+
     void BanPlayer(CCSPlayerController? admin, CCSPlayerController target, int time, string reason);
     Task BanPlayerAsync(CCSPlayerController? admin, CCSPlayerController target, int time, string reason);
     void UnBanPlayer(CCSPlayerController? admin, string steamId, string reason);
     Task UnBanPlayerAsync(CCSPlayerController? admin, string steamId, string reason);
+    bool IsPlayerMute(CCSPlayerController player, MuteType type = MuteType.All);
     bool CheckingForAdminAndFlag(CCSPlayerController? player, AdminFlag flag);
     void ReplyToCommand(CCSPlayerController? controller, string message, params object?[] args);
     void RegisterCommand(string command, AdminFlag flag, int args, string usage,

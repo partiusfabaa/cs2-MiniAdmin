@@ -38,6 +38,11 @@ public class BaseAdminApi : IBaseAdminApi
         await _baseAdmin.BaseCommands.UnBanAsync(admin, steamId, reason);
     }
 
+    public bool IsPlayerMute(CCSPlayerController player, MuteType type = MuteType.All)
+    {
+        return _baseAdmin.IsPlayerMuted(player.SteamID, type);
+    }
+
     public bool CheckingForAdminAndFlag(CCSPlayerController? player, AdminFlag flag)
     {
         return _baseAdmin.CheckingForAdminAndFlag(player, flag);

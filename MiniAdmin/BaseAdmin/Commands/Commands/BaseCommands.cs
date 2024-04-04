@@ -55,8 +55,9 @@ public class BaseCommands
                 MoveType_t.MOVETYPE_WALK => MoveType_t.MOVETYPE_NOCLIP,
                 _ => playerPawn.MoveType
             };
-        
-        _baseAdmin.PrintToChatAll(_baseAdmin.Localizer["give_noclip", player.PlayerName, target == null ? $"{player.PlayerName}" : $"{target.PlayerName}"]);
+
+        _baseAdmin.PrintToChatAll(_baseAdmin.Localizer["give_noclip", player.PlayerName,
+            target == null ? $"{player.PlayerName}" : $"{target.PlayerName}"]);
     }
 
     [RegisterCommand("css_team", AdminFlag.Kick, 1, "<#userid or username> <ct/tt/spec/none> [-k]")]
@@ -100,7 +101,7 @@ public class BaseCommands
 
         var fromName = controller == null ? _baseAdmin.Config.BanFromConsoleName : controller.PlayerName;
         var message = _baseAdmin.Localizer["private_message", fromName, command.ArgString].Value;
-        
+
         _baseAdmin.PrintToChat(target, message);
         _baseAdmin.ReplyToCommand(controller, message);
     }
@@ -134,13 +135,13 @@ public class BaseCommands
     {
         Server.ExecuteCommand(command.ArgString);
     }
-    
+
     [RegisterCommand("css_slay", AdminFlag.Slay, 1, "<username or #userid>")]
     public void OnCmdSlay(CCSPlayerController? controller, CommandInfo command)
     {
         if (!Utils.GetPlayer(command.GetArg(1), out var target)) return;
         if (!_baseAdmin.PlayerImmunityComparison(controller, target)) return;
-        
+
         if (!target.PawnIsAlive || target.Team is CsTeam.None or CsTeam.Spectator)
         {
             _baseAdmin.ReplyToCommand(controller, _baseAdmin.Localizer["player.slay.is_invalid"]);
@@ -152,9 +153,10 @@ public class BaseCommands
         {
             playerPawn.CommitSuicide(true, true);
         }
-        
+
         _baseAdmin.ReplyToCommand(controller,
-            $"{(controller != null ? controller.PlayerName : _baseAdmin.Config.BanFromConsoleName)}: Player '{target.PlayerName}' has been killed");
+            _baseAdmin.Localizer["player.slay.has_been_killed",
+                controller != null ? controller.PlayerName : _baseAdmin.Config.BanFromConsoleName, target.PlayerName]);
     }
 
 
@@ -175,7 +177,11 @@ public class BaseCommands
     public void OnCmdBan(CCSPlayerController? controller, CommandInfo command)
     {
         if (!Utils.GetPlayer(command.GetArg(1), out var target)) return;
-        if (!_baseAdmin.PlayerImmunityComparison(controller, target)) return;
+        if (!_baseAdmin.PlayerImmunityComparison(controller, target))
+        {
+            _baseAdmin.ReplyToCommand(controller, _baseAdmin.Localizer["cant_ban_player"]);
+            return;
+        }
 
         var time = int.TryParse(command.GetArg(2), out var value) ? value : 0;
         var reason = "None";
@@ -239,8 +245,45 @@ public class BaseCommands
             _baseAdmin.ReplyToCommand(controller, _baseAdmin.Localizer["cant_mute_player"]);
             return;
         }
+        
+        var time = int.TryParse(command.GetArg(2), out var value) ? value : 0;
+        var reason = "None";
+
+        if (command.ArgCount > 3)
+            reason = command.GetArg(4);
+
+        Task.Run(() => AddMuteAsync(controller, target, time, reason));
     }
-    
+
+    public async Task AddMuteAsync(CCSPlayerController? admin, CCSPlayerController target, int time, string reason)
+    {
+        await Server.NextFrameAsync(() =>
+        {
+            var adminInfo = _baseAdmin.GetNameAndId(admin);
+            var targetId = new SteamID(target.SteamID);
+
+            var user = new MuteUser
+            {
+                mute_type = (int)MuteType.Micro,
+                admin_username = adminInfo.name,
+                admin_steamid = adminInfo.id,
+                username = target.PlayerName,
+                steamid64 = targetId.SteamId64,
+                steamid = targetId.SteamId2,
+                reason = reason,
+                unmute_reason = "",
+                admin_unlocked_username = "",
+                admin_unlocked_steamid = "",
+                start_mute_time = DateTime.UtcNow.GetUnixEpoch(),
+                end_mute_time = time == 0 ? 0 : DateTime.UtcNow.AddSeconds(time).GetUnixEpoch(),
+                mute_active = true
+            };
+            
+            _baseAdmin.Database.AddMute(admin, user);
+            _baseAdmin.MuteUsers[target.SteamID] = user;
+        });
+    }
+
     [RegisterCommand("css_map", AdminFlag.Changemap, 1, "<map>")]
     public void OnCmdChangeMap(CCSPlayerController? controller, CommandInfo command)
     {

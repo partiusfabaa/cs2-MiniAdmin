@@ -1,5 +1,5 @@
 ﻿{
-  "prefix": "[ {blue}Admin{default} ]",  
+  "prefix": "[ {blue}Admin{default} ]",
 
   //menu
   "menu_title": "[ {blue}Admin Menu{default} ]",
@@ -34,6 +34,9 @@
   "unban_user_not_banned": "User not found or currently not banned",
   "unban_user_successfully_unblocked": "Player {0} successfully unblocked with reason: {1}",
 
+  //mute
+  "mute_chat_disabled": "You cannot send messages because your chat is disabled. End of gag in: {0}",
+
   //unmute
   "unmute_user_not_muted": "User not found or currently not muted",
   "unmute_user_successfully_unmuted": "Player {0} successfully unmuted with reason: {1}",
@@ -44,6 +47,7 @@
 
   //slay
   "player.slay.is_invalid": "Player is invalid!",
+  "player.slay.has_been_killed": "{blue}{0}{default}: player {blue}{1}{default} has been killed",
 
   //other
   "not_have_access": "You do not have access to this command",

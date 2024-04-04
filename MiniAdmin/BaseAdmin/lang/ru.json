@@ -34,6 +34,9 @@
   "unban_user_not_banned": "Пользователь не найден или в данный момент не забанен",
   "unban_user_successfully_unblocked": "Игрок {0} успешно разблокирован с причиной: {1}",
   
+  //mute
+  "mute_chat_disabled": "Вы не можете написать сообщение, потому что у вас отключен чат. Конец гага через: {0}",
+  
   //unmute
   "unmute_user_not_muted": "Пользователь не найден или в данный момент не заглушен",
   "unmute_user_successfully_unmuted": "Игрок {0} успешно разглушен с причиной: {1}",
@@ -44,6 +47,7 @@
   
   //slay
   "player.slay.is_invalid": "Игрок недействителен!",
+  "player.slay.has_been_killed": "{blue}{0}{default}: игрок {blue}{1}{default} был убит",
   
   //othjer
   "not_have_access": "У вас нет доступа к этой команде",

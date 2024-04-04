@@ -32,6 +32,7 @@ public class BaseAdmin : BasePlugin
 
     private readonly DateTime[] _playerPlayTime = new DateTime[66];
     public readonly Dictionary<ulong, Admin> AdminUsers = new();
+    public readonly Dictionary<ulong, MuteUser> MuteUsers = new();
 
     public Database Database = null!;
     public Config Config = new();
@@ -42,6 +43,7 @@ public class BaseAdmin : BasePlugin
 
     public new CommandManager CommandManager;
     public BaseCommands BaseCommands;
+    public FunCommands FunCommands;
 
     public override void Load(bool hotReload)
     {
@@ -50,13 +52,16 @@ public class BaseAdmin : BasePlugin
         LoadConfig();
 
         Menu = new MenuService(this);
-        
+
         CommandManager = new CommandManager(this);
         CommandManager.RegisterCommands(this);
 
         BaseCommands = new BaseCommands(this);
         CommandManager.RegisterCommands(BaseCommands);
-        
+
+        FunCommands = new FunCommands(this);
+        CommandManager.RegisterCommands(FunCommands);
+
         _dbConnectionString = BuildConnectionString();
         Database = new Database(this, _dbConnectionString);
 
@@ -76,37 +81,51 @@ public class BaseAdmin : BasePlugin
             if (player == null || player.IsBot) return HookResult.Continue;
 
             AdminUsers.Remove(player.SteamID);
+            MuteUsers.Remove(player.SteamID);
             _playerPlayTime[player.Slot] = DateTime.MinValue;
 
             return HookResult.Continue;
         });
 
         AddTimer(10, () => { Task.Run(Database.DeleteExpiredAdminsAsync); }, TimerFlags.REPEAT);
+
+        AddCommandListener("say", Listener_Say);
+        AddCommandListener("say_team", Listener_Say);
     }
 
-    public async Task LoadAdminUserAsync(SteamID steamId)
+    private HookResult Listener_Say(CCSPlayerController? player, CommandInfo info)
     {
-        try
-        {
-            var userAdmin = await Database.GetAdminFromDb(steamId.SteamId2);
+        if (player == null) return HookResult.Continue;
+        var command = info.GetArg(0);
 
-            if (userAdmin != null)
-            {
-                AdminUsers[steamId.SteamId64] = new Admin
-                {
-                    username = userAdmin.username,
-                    steamid = userAdmin.steamid,
-                    start_time = userAdmin.start_time,
-                    end_time = userAdmin.end_time,
-                    immunity = userAdmin.immunity,
-                    flags = userAdmin.flags
-                };
-            }
-        }
-        catch (Exception e)
+        if (command is "say_team")
         {
-            Console.WriteLine(e);
         }
+        else
+        {
+        }
+
+        if (IsPlayerMuted(player.SteamID, MuteType.Chat))
+        {
+            if (!MuteUsers.TryGetValue(player.SteamID, out var muteUser)) return HookResult.Continue;
+
+            if (!muteUser.IsTimerActive)
+            {
+                var endTime = DateTimeOffset.FromUnixTimeSeconds(muteUser.end_mute_time).UtcDateTime;
+                var timeEnd = endTime - DateTime.UtcNow;
+
+                var time =
+                    $"{(timeEnd.Days == 0 ? "" : $"{timeEnd.Days}d, ")}{timeEnd.Hours:00}:{timeEnd.Minutes:00}:{timeEnd.Seconds:00}";
+
+                PrintToChat(player, Localizer["player.mute.chat_disabled", time]);
+                muteUser.IsTimerActive = true;
+                AddTimer(5.0f, () => muteUser.IsTimerActive = false);
+            }
+
+            return HookResult.Handled;
+        }
+
+        return HookResult.Continue;
     }
 
     private async Task OnClientAuthorizedAsync(int slot, CCSPlayerController player, SteamID steamId)
@@ -114,6 +133,7 @@ public class BaseAdmin : BasePlugin
         try
         {
             await LoadAdminUserAsync(steamId);
+            await LoadMuteUserAsync(steamId);
             await using var connection = new MySqlConnection(_dbConnectionString);
             await connection.OpenAsync();
 
@@ -157,6 +177,55 @@ public class BaseAdmin : BasePlugin
         }
     }
 
+    private async Task LoadMuteUserAsync(SteamID steamId)
+    {
+        try
+        {
+            var muteUser = await Database.GetActiveMuteAsync(steamId.SteamId2);
+            if (muteUser != null)
+            {
+                MuteUsers[steamId.SteamId64] = new MuteUser
+                {
+                    admin_username = muteUser.admin_username,
+                    admin_steamid = muteUser.admin_steamid,
+                    username = muteUser.username,
+                    steamid = muteUser.steamid,
+                    reason = muteUser.reason,
+                    unmute_reason = muteUser.unmute_reason
+                };
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+    public async Task LoadAdminUserAsync(SteamID steamId)
+    {
+        try
+        {
+            var userAdmin = await Database.GetAdminFromDb(steamId.SteamId2);
+
+            if (userAdmin != null)
+            {
+                AdminUsers[steamId.SteamId64] = new Admin
+                {
+                    username = userAdmin.username,
+                    steamid = userAdmin.steamid,
+                    start_time = userAdmin.start_time,
+                    end_time = userAdmin.end_time,
+                    immunity = userAdmin.immunity,
+                    flags = userAdmin.flags
+                };
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
     public CsTeam GetTeam(string name)
     {
         return name switch
@@ -182,7 +251,7 @@ public class BaseAdmin : BasePlugin
 
         return (adminName, adminSteamId);
     }
-    
+
     public bool CheckingForAdminAndFlag(CCSPlayerController? controller, AdminFlag flag)
     {
         if (controller == null) return true;
@@ -192,7 +261,7 @@ public class BaseAdmin : BasePlugin
         PrintToChat(controller, Localizer["not_have_access"]);
         return false;
     }
-    
+
     public bool IsPlayerAdmin(ulong steamId)
     {
         if (!AdminUsers.TryGetValue(steamId, out var admin)) return false;
@@ -200,6 +269,18 @@ public class BaseAdmin : BasePlugin
         if (admin.end_time != 0 && DateTime.UtcNow.GetUnixEpoch() > admin.end_time) return false;
 
         return admin.end_time == 0 || DateTime.UtcNow.GetUnixEpoch() < admin.end_time;
+    }
+
+    public bool IsPlayerMuted(ulong steamId, MuteType muteType)
+    {
+        if (!MuteUsers.TryGetValue(steamId, out var muteUser)) return false;
+        if (!muteUser.mute_active) return false;
+
+        if (muteUser.end_mute_time != 0 && DateTime.UtcNow.GetUnixEpoch() > muteUser.end_mute_time)
+            return false;
+
+        return (muteUser.end_mute_time == 0 || DateTime.UtcNow.GetUnixEpoch() < muteUser.end_mute_time) &&
+               (muteUser.mute_type == (int)muteType || muteUser.mute_type == (int)MuteType.All);
     }
 
     public bool HasLetterInUserFlags(ulong steam, char letter)
