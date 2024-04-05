@@ -30,6 +30,6 @@ public abstract class AdminMenuBase : IMenuHandler
             menu.AddMenuOption($"{players.PlayerName} [{players.UserId}]", (_, _) => handler(players));
         }
         
-        _menuService.OpenMenu(player, menu);
+        menu.Open(player);
     }
 }

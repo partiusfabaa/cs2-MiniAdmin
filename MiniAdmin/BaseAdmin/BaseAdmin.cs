@@ -343,7 +343,79 @@ public class BaseAdmin : BasePlugin
     {
         AddTimer(2.0f, () => Server.ExecuteCommand($"{(isWorkshop ? "ds_workshop_changelevel" : "map")} {mapName}"));
     }
+    
+    public async Task AddBanAsync(CCSPlayerController? admin, CCSPlayerController target, int time, string reason)
+    {
+        await Server.NextFrameAsync(() =>
+        {
+            var adminInfo = GetNameAndId(admin);
 
+            var targetId = new SteamID(target.SteamID);
+            Database.AddBan(admin, new BanUser
+            {
+                admin_username = adminInfo.name,
+                admin_steamid = adminInfo.id,
+                username = target.PlayerName,
+                steamid64 = targetId.SteamId64,
+                steamid = targetId.SteamId2,
+                reason = reason,
+                start_ban_time = DateTime.UtcNow.GetUnixEpoch(),
+                end_ban_time = time == 0 ? 0 : DateTime.UtcNow.AddSeconds(time).GetUnixEpoch(),
+                ban_active = true
+            });
+            target.Kick("ban");
+        });
+    }
+    
+    public async Task UnBanAsync(CCSPlayerController? admin, string targetSteamId, string reason)
+    {
+        await Server.NextFrameAsync(() =>
+        {
+            var adminInfo = GetNameAndId(admin);
+
+            Database.UnbanUser(admin, adminInfo.name, adminInfo.id, targetSteamId, reason);
+        });
+    }
+
+    public async Task AddMuteAsync(CCSPlayerController? admin, CCSPlayerController target, int time, string reason)
+    {
+        await Server.NextFrameAsync(() =>
+        {
+            var adminInfo = GetNameAndId(admin);
+            var targetId = new SteamID(target.SteamID);
+
+            var user = new MuteUser
+            {
+                mute_type = (int)MuteType.Micro,
+                admin_username = adminInfo.name,
+                admin_steamid = adminInfo.id,
+                username = target.PlayerName,
+                steamid64 = targetId.SteamId64,
+                steamid = targetId.SteamId2,
+                reason = reason,
+                unmute_reason = "",
+                admin_unlocked_username = "",
+                admin_unlocked_steamid = "",
+                start_mute_time = DateTime.UtcNow.GetUnixEpoch(),
+                end_mute_time = time == 0 ? 0 : DateTime.UtcNow.AddSeconds(time).GetUnixEpoch(),
+                mute_active = true
+            };
+
+            Database.AddMute(admin, user);
+            MuteUsers[target.SteamID] = user;
+        });
+    }
+    
+    public async Task UnMuteAsync(CCSPlayerController? admin, MuteType type, string targetSteamId, string reason)
+    {
+        await Server.NextFrameAsync(() =>
+        {
+            var adminInfo = GetNameAndId(admin);
+
+            Database.UnmuteUser(admin, (int)type, adminInfo.name, adminInfo.id, targetSteamId, reason);
+        });
+    }
+    
     public void PrintToChat(CCSPlayerController controller, string msg)
     {
         controller.PrintToChat($"{Localizer["prefix"]} {msg}");

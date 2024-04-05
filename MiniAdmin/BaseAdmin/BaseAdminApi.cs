@@ -20,22 +20,22 @@ public class BaseAdminApi : IBaseAdminApi
 
     public void BanPlayer(CCSPlayerController? admin, CCSPlayerController target, int time, string reason)
     {
-        Task.Run(() => _baseAdmin.BaseCommands.AddBanAsync(admin, target, time, reason));
+        Task.Run(() => _baseAdmin.AddBanAsync(admin, target, time, reason));
     }
 
     public async Task BanPlayerAsync(CCSPlayerController? admin, CCSPlayerController target, int time, string reason)
     {
-        await _baseAdmin.BaseCommands.AddBanAsync(admin, target, time, reason);
+        await _baseAdmin.AddBanAsync(admin, target, time, reason);
     }
 
     public void UnBanPlayer(CCSPlayerController? admin, string steamId, string reason)
     {
-        Task.Run(() => _baseAdmin.BaseCommands.UnBanAsync(admin, steamId, reason));
+        Task.Run(() => _baseAdmin.UnBanAsync(admin, steamId, reason));
     }
 
     public async Task UnBanPlayerAsync(CCSPlayerController? admin, string steamId, string reason)
     {
-        await _baseAdmin.BaseCommands.UnBanAsync(admin, steamId, reason);
+        await _baseAdmin.UnBanAsync(admin, steamId, reason);
     }
 
     public bool IsPlayerMute(CCSPlayerController player, MuteType type = MuteType.All)

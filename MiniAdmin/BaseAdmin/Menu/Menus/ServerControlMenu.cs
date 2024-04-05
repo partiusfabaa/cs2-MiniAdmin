@@ -22,7 +22,7 @@ public class ServerControlMenu : AdminMenuBase
 
         menu.AddMenuOption(_baseAdmin.Localizer["menu.server.change_map"], SelectMapMenu);
 
-        _menuService.OpenMenu(player, menu);
+        menu.Open(player);
         MenuService.Menus.TryAdd(MenuItem.PlayerControl, menu);
     }
 
@@ -39,6 +39,6 @@ public class ServerControlMenu : AdminMenuBase
                 _baseAdmin.ChangeMap(map, map.StartsWith("ws:"));
             });
         }
-        _menuService.OpenMenu(player, menu);
+        menu.Open(player);
     }
 }

@@ -26,7 +26,7 @@ public class BaseCommands
     {
         if (controller == null) return;
 
-        _baseAdmin.Menu.OpenMenu(controller);
+        _baseAdmin.Menu.AdminMenu.Open(controller);
     }
 
     [RegisterCommand("css_noclip", AdminFlag.Cheats)]
@@ -189,30 +189,7 @@ public class BaseCommands
         if (command.ArgCount > 3)
             reason = command.GetArg(4);
 
-        Task.Run(() => AddBanAsync(controller, target, time, reason));
-    }
-
-    public async Task AddBanAsync(CCSPlayerController? admin, CCSPlayerController target, int time, string reason)
-    {
-        await Server.NextFrameAsync(() =>
-        {
-            var adminInfo = _baseAdmin.GetNameAndId(admin);
-
-            var targetId = new SteamID(target.SteamID);
-            _baseAdmin.Database.AddBan(admin, new BanUser
-            {
-                admin_username = adminInfo.name,
-                admin_steamid = adminInfo.id,
-                username = target.PlayerName,
-                steamid64 = targetId.SteamId64,
-                steamid = targetId.SteamId2,
-                reason = reason,
-                start_ban_time = DateTime.UtcNow.GetUnixEpoch(),
-                end_ban_time = time == 0 ? 0 : DateTime.UtcNow.AddSeconds(time).GetUnixEpoch(),
-                ban_active = true
-            });
-            target.Kick("ban");
-        });
+        Task.Run(() => _baseAdmin.AddBanAsync(controller, target, time, reason));
     }
 
     [RegisterCommand("css_unban", AdminFlag.Unban, 1, "<steamid> [reason]")]
@@ -223,17 +200,7 @@ public class BaseCommands
         if (command.ArgCount > 1)
             reason = command.GetArg(2);
 
-        Task.Run(() => UnBanAsync(controller, steamId, reason));
-    }
-
-    public async Task UnBanAsync(CCSPlayerController? admin, string targetSteamId, string reason)
-    {
-        await Server.NextFrameAsync(() =>
-        {
-            var adminInfo = _baseAdmin.GetNameAndId(admin);
-
-            _baseAdmin.Database.UnbanUser(admin, adminInfo.name, adminInfo.id, targetSteamId, reason);
-        });
+        Task.Run(() => _baseAdmin.UnBanAsync(controller, steamId, reason));
     }
 
     [RegisterCommand("css_mute", AdminFlag.Generic, 2, "<#userid or username> <time_seconds> [reason]")]
@@ -252,36 +219,7 @@ public class BaseCommands
         if (command.ArgCount > 3)
             reason = command.GetArg(4);
 
-        Task.Run(() => AddMuteAsync(controller, target, time, reason));
-    }
-
-    public async Task AddMuteAsync(CCSPlayerController? admin, CCSPlayerController target, int time, string reason)
-    {
-        await Server.NextFrameAsync(() =>
-        {
-            var adminInfo = _baseAdmin.GetNameAndId(admin);
-            var targetId = new SteamID(target.SteamID);
-
-            var user = new MuteUser
-            {
-                mute_type = (int)MuteType.Micro,
-                admin_username = adminInfo.name,
-                admin_steamid = adminInfo.id,
-                username = target.PlayerName,
-                steamid64 = targetId.SteamId64,
-                steamid = targetId.SteamId2,
-                reason = reason,
-                unmute_reason = "",
-                admin_unlocked_username = "",
-                admin_unlocked_steamid = "",
-                start_mute_time = DateTime.UtcNow.GetUnixEpoch(),
-                end_mute_time = time == 0 ? 0 : DateTime.UtcNow.AddSeconds(time).GetUnixEpoch(),
-                mute_active = true
-            };
-
-            _baseAdmin.Database.AddMute(admin, user);
-            _baseAdmin.MuteUsers[target.SteamID] = user;
-        });
+        Task.Run(() => _baseAdmin.AddMuteAsync(controller, target, time, reason));
     }
 
     [RegisterCommand("css_unmute", AdminFlag.Unban, 1, "<steamid | #userid> [reason]")]
@@ -302,23 +240,13 @@ public class BaseCommands
 
         var steamId = target != null ? new SteamID(target.SteamID).SteamId2 : arg1;
 
-        Task.Run(() => UnMuteAsync(controller, MuteType.Micro, steamId, reason));
+        Task.Run(() => _baseAdmin.UnMuteAsync(controller, MuteType.Micro, steamId, reason));
 
         if (target != null)
         {
             _baseAdmin.MuteUsers[target.SteamID].mute_active = false;
             target.VoiceFlags = VoiceFlags.Normal;
         }
-    }
-
-    public async Task UnMuteAsync(CCSPlayerController? admin, MuteType type, string targetSteamId, string reason)
-    {
-        await Server.NextFrameAsync(() =>
-        {
-            var adminInfo = _baseAdmin.GetNameAndId(admin);
-
-            _baseAdmin.Database.UnmuteUser(admin, (int)type, adminInfo.name, adminInfo.id, targetSteamId, reason);
-        });
     }
 
     [RegisterCommand("css_map", AdminFlag.Changemap, 1, "<map>")]

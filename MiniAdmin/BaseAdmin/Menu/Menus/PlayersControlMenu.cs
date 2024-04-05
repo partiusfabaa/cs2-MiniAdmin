@@ -36,7 +36,7 @@ public class PlayersControlMenu : AdminMenuBase
             }));
         }
 
-        _menuService.OpenMenu(player, menu);
+        menu.Open(player);
         MenuService.Menus.TryAdd(MenuItem.PlayerControl, menu);
     }
 }
