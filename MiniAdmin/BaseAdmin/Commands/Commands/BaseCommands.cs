@@ -219,7 +219,7 @@ public class BaseCommands
         if (command.ArgCount > 3)
             reason = command.GetArg(4);
 
-        Task.Run(() => _baseAdmin.AddMuteAsync(controller, target, time, reason));
+        Task.Run(() => _baseAdmin.AddMuteAsync(controller, target, MuteType.Micro, time, reason));
     }
 
     [RegisterCommand("css_unmute", AdminFlag.Unban, 1, "<steamid | #userid> [reason]")]

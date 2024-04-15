@@ -11,7 +11,6 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Timers;
@@ -37,13 +36,13 @@ public class BaseAdmin : BasePlugin
     public Database Database = null!;
     public Config Config = new();
     public BaseConfig BaseConfig = new();
-    public MenuService Menu;
+    public MenuService Menu = null!;
 
     private IBaseAdminApi? _api;
 
-    public new CommandManager CommandManager;
-    public BaseCommands BaseCommands;
-    public FunCommands FunCommands;
+    public new CommandManager CommandManager = null!;
+    public BaseCommands BaseCommands = null!;
+    public FunCommands FunCommands = null!;
 
     public override void Load(bool hotReload)
     {
@@ -305,7 +304,7 @@ public class BaseAdmin : BasePlugin
 
     private string BuildConnectionString()
     {
-        var dbConfig = Config.Connection;
+        var dbConfig = Config.Connection!;
 
         Console.WriteLine("Building connection string");
         var builder = new MySqlConnectionStringBuilder
@@ -377,7 +376,7 @@ public class BaseAdmin : BasePlugin
         });
     }
 
-    public async Task AddMuteAsync(CCSPlayerController? admin, CCSPlayerController target, int time, string reason)
+    public async Task AddMuteAsync(CCSPlayerController? admin, CCSPlayerController target, MuteType type, int time, string reason)
     {
         await Server.NextFrameAsync(() =>
         {
@@ -386,7 +385,7 @@ public class BaseAdmin : BasePlugin
 
             var user = new MuteUser
             {
-                mute_type = (int)MuteType.Micro,
+                mute_type = (int)type,
                 admin_username = adminInfo.name,
                 admin_steamid = adminInfo.id,
                 username = target.PlayerName,
