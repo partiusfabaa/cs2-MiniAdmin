@@ -1,9 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using BaseAdminApi.Enums;
+using BaseAdminApi.Models;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities;
 using Dapper;
 using MySqlConnector;
 
@@ -113,32 +114,35 @@ public class Database
         }
     }
 
-    public async Task<string> AddBan(User user)
+    public async Task AddBan(CCSPlayerController? admin, BanUser banUser)
     {
         try
         {
-            var isUserBanned = await IsUserBanned(user.steamid);
+            var isUserBanned = await IsUserBanned(banUser.steamid);
             if (isUserBanned)
-                return $"The user with the SteamId identifier {user.steamid} has already been banned.";
+            {
+                await Server.NextFrameAsync(() =>
+                    _baseAdmin.ReplyToCommand(admin, _baseAdmin.Localizer["ban_user_already_banned", banUser.steamid]));
+                return;
+            }
 
             await using var connection = new MySqlConnection(_dbConnectionString);
 
             await connection.ExecuteAsync(@"
                 INSERT INTO miniadmin_bans (admin_username, admin_steamid, username, steamid64, steamid, reason, unban_reason, admin_unlocked_username, admin_unlocked_steamid, start_ban_time, end_ban_time, ban_active)
                 VALUES (@admin_username, @admin_steamid, @username, @steamid64, @steamid, @reason, @unban_reason, @admin_unlocked_username, @admin_unlocked_steamid, @start_ban_time, @end_ban_time, @ban_active);
-                ", user);
+                ", banUser);
 
-            return $"Player '{user.username} | [{user.steamid}]' is banned";
+            await Server.NextFrameAsync(() => _baseAdmin.ReplyToCommand(admin,
+                _baseAdmin.Localizer["ban_user_is_banned", banUser.username, banUser.steamid]));
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
-
-        return string.Empty;
     }
 
-    public async Task AddMute(MuteUser user, CCSPlayerController? controller)
+    public async Task AddMute(CCSPlayerController? admin, MuteUser user)
     {
         try
         {
@@ -150,14 +154,14 @@ public class Database
             {
                 if (activeUserMute.mute_type == user.mute_type)
                 {
-                    Server.NextFrame(() =>
-                        _baseAdmin.ReplyToCommand(controller, "The user already has sound or chat disabled"));
+                    await Server.NextFrameAsync(() =>
+                        _baseAdmin.ReplyToCommand(admin, "The user already has sound or chat disabled"));
                     return;
                 }
 
                 if (activeUserMute.mute_type == 2 || user.mute_type == 2)
                 {
-                    Server.NextFrame(() => _baseAdmin.ReplyToCommand(controller,
+                    await Server.NextFrameAsync(() => _baseAdmin.ReplyToCommand(admin,
                         $"The user with the SteamId identifier {user.steamid} has already been muted in all channels."));
                     return;
                 }
@@ -183,7 +187,7 @@ public class Database
                 WHERE steamid = @steamid and mute_active = 1;
                 ", user);
 
-                Server.NextFrame(() => _baseAdmin.ReplyToCommand(controller,
+                await Server.NextFrameAsync(() => _baseAdmin.ReplyToCommand(admin,
                     $"Player '{user.username} | [{user.steamid}]' mute has been updated."));
                 return;
             }
@@ -193,8 +197,8 @@ public class Database
             VALUES (@mute_type, @admin_username, @admin_steamid, @username, @steamid64, @steamid, @reason, @unmute_reason, @admin_unlocked_username, @admin_unlocked_steamid, @start_mute_time, @end_mute_time, @mute_active);
             ", user);
 
-            Server.NextFrame(() =>
-                _baseAdmin.ReplyToCommand(controller, $"Player '{user.username} | [{user.steamid}]' is muted."));
+            await Server.NextFrameAsync(() =>
+                _baseAdmin.ReplyToCommand(admin, $"Player '{user.username} | [{user.steamid}]' is muted."));
         }
         catch (Exception e)
         {
@@ -202,22 +206,16 @@ public class Database
         }
     }
 
-    public async Task AddAdmin(Admins admin, CCSPlayerController? player = null, bool fromMenu = false)
+    public async Task AddAdmin(CCSPlayerController? player, Admin admin)
     {
         try
         {
             var isAdminExist = await GetAdminFromDb(admin.steamid);
             if (isAdminExist != null)
             {
-                _baseAdmin.PrintLogError("An administrator with the SteamId identifier {steamid} already exists.",
-                    admin.steamid);
-
-                if (fromMenu)
-                {
-                    if (player != null)
-                        Server.NextFrame(() => _baseAdmin.PrintToChat(player,
-                            $"An administrator with the SteamId identifier {admin.steamid} already exists."));
-                }
+                await Server.NextFrameAsync(() =>
+                    _baseAdmin.ReplyToCommand(player,
+                        _baseAdmin.Localizer["add_admin_user_already_exists", admin.steamid]));
 
                 return;
             }
@@ -230,17 +228,9 @@ public class Database
                 VALUES 
                     (@username, @steamid, @start_time, @end_time, @immunity, @flags);", admin);
 
-            _baseAdmin.PrintLogInfo("Admin '{username}[{steamid}]' successfully added",
-                admin.username, admin.steamid);
-            if (fromMenu)
-            {
-                if (player != null)
-                {
-                    Server.NextFrame(() =>
-                        _baseAdmin.PrintToChat(player,
-                            $"Admin '{admin.username}[{admin.steamid}]' successfully added"));
-                }
-            }
+            await Server.NextFrameAsync(() =>
+                _baseAdmin.ReplyToCommand(player,
+                    _baseAdmin.Localizer["add_admin_successfully", admin.username, admin.steamid]));
         }
         catch (Exception e)
         {
@@ -248,7 +238,7 @@ public class Database
         }
     }
 
-    public async Task UpdateAdmin(Admins admin)
+    public async Task UpdateAdmin(Admin admin)
     {
         try
         {
@@ -320,7 +310,7 @@ public class Database
         {
             await using var connection = new MySqlConnection(_dbConnectionString);
 
-            var deleteAdmins = await connection.QueryAsync<Admins>(
+            var deleteAdmins = await connection.QueryAsync<Admin>(
                 "SELECT * FROM miniadmin_admins WHERE end_time <= @CurrentTime AND end_time > 0",
                 new { CurrentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() });
 
@@ -366,17 +356,25 @@ public class Database
         return string.Empty;
     }
 
-    public async Task<string> UnbanUser(string adminName, string adminSteamId, string steamId, string reason)
+    public async Task UnbanUser(CCSPlayerController? admin, string adminName, string adminSteamId, string steamId,
+        string reason)
     {
         try
         {
             await using var connection = new MySqlConnection(_dbConnectionString);
 
-            var user = await connection.QueryFirstOrDefaultAsync<User>(
+            var user = await connection.QueryFirstOrDefaultAsync<BanUser>(
                 "SELECT * FROM miniadmin_bans WHERE steamid = @SteamId AND ban_active = 1",
                 new { SteamId = steamId });
 
-            if (user == null) return "User not found or not currently banned";
+            if (user == null)
+            {
+                await Server.NextFrameAsync(() =>
+                    _baseAdmin.ReplyToCommand(admin, _baseAdmin.Localizer["unban_user_not_banned"]));
+                return;
+            }
+
+            ;
 
             user.unban_reason = reason;
             user.admin_unlocked_username = adminName;
@@ -390,17 +388,18 @@ public class Database
                     WHERE steamid = @SteamId AND ban_active = 1
                     ", user);
 
-            return $"Player {steamId} has been successfully unblocked with reason: {reason}";
+            await Server.NextFrameAsync(() =>
+                _baseAdmin.ReplyToCommand(admin,
+                    _baseAdmin.Localizer["unban_user_successfully_unblocked", steamId, reason]));
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
-
-        return string.Empty;
     }
 
-    public async Task<string> UnmuteUser(int unmuteType, string adminName, string adminSteamId, string steamId,
+    public async Task UnmuteUser(CCSPlayerController? admin, int unmuteType, string adminName, string adminSteamId,
+        string steamId,
         string reason)
     {
         try
@@ -411,7 +410,14 @@ public class Database
                 "SELECT * FROM miniadmin_mute WHERE steamid = @SteamId AND mute_active = 1",
                 new { SteamId = steamId });
 
-            if (user == null) return "User not found or not currently muted";
+            if (user == null)
+            {
+                await Server.NextFrameAsync(() =>
+                    _baseAdmin.ReplyToCommand(admin, _baseAdmin.Localizer["unmute_user_not_muted"]));
+                return;
+            }
+
+            ;
 
             user.unmute_reason = reason;
             user.admin_unlocked_username = adminName;
@@ -443,14 +449,14 @@ public class Database
                         mute_active = 1
                     ", user);
 
-            return $"Player {steamId} has been successfully unmuted with reason: {reason}";
+            await Server.NextFrameAsync(() =>
+                _baseAdmin.ReplyToCommand(admin,
+                    _baseAdmin.Localizer["unmute_user_successfully_unmuted", steamId, reason]));
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
         }
-
-        return string.Empty;
     }
 
     public async Task<MuteUser?> GetActiveMuteAsync(string steamId)
@@ -477,7 +483,7 @@ public class Database
     {
         await using var connection = new MySqlConnection(_dbConnectionString);
 
-        var existingBan = connection.QueryFirstOrDefaultAsync<User>(
+        var existingBan = connection.QueryFirstOrDefaultAsync<BanUser>(
             "SELECT * FROM miniadmin_bans WHERE steamid = @SteamId AND ban_active = 1",
             new { SteamId = steamId }).Result;
 
@@ -495,11 +501,11 @@ public class Database
         return existingMute != null;
     }
 
-    public async Task<Admins?> GetAdminFromDb(string steamId)
+    public async Task<Admin?> GetAdminFromDb(string steamId)
     {
         await using var connection = new MySqlConnection(_dbConnectionString);
 
-        var existingAdmin = connection.QueryFirstOrDefaultAsync<Admins>(
+        var existingAdmin = connection.QueryFirstOrDefaultAsync<Admin>(
             "SELECT * FROM miniadmin_admins WHERE steamid = @SteamId",
             new { SteamId = steamId }).Result;
 

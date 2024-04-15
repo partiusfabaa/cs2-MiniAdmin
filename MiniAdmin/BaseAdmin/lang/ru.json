@@ -1,0 +1,64 @@
+﻿{
+  "prefix": "[ {blue}Admin{default} ]",
+  
+  //menu
+  "menu_title": "[ {blue}Меню администратора {default}]",
+  "menu.all_players": "Все игроки:",
+  "menu.pick_player": "Выберите игрока:",
+  "menu.players_control": "Управление игроками",
+  "menu.server_control": "Управление сервером",
+  "menu.lock_control": "Управления блокировками",
+  
+  //menu players
+  "menu.players.kick_player": "Кикнуть игрока",
+  "menu.players.kill_player": "Убить игрока",
+  
+  //menu server
+  "menu.server.change_map": "Сменить карту",
+  "menu.server.map_change": "{0}: смена карты на {1}",
+  "menu.server.doesnt_exist": "Карта {0} не найдена",
+  
+  //menu lock
+  "menu.lock.ban_player": "Забанить игрока",
+  "menu.lock.mute_player": "Замутить игрока",
+  
+  //player
+  "player.kick": "Администратор {blue}{0}{default} кикнул игрока {blue}{1}",
+  "player.kill": "Администратор {blue}{0}{default} убил игрока {blue}{1}",
+  "player.not_found": "Игрок не найден",
+  
+  //ban
+  "ban_user_already_banned": "Пользователь с идентификатором SteamId {0} уже забанен.",
+  "ban_user_is_banned": "Игрок {0} [{1}] забанен",
+  
+  //unban
+  "unban_user_not_banned": "Пользователь не найден или в данный момент не забанен",
+  "unban_user_successfully_unblocked": "Игрок {0} успешно разблокирован с причиной: {1}",
+  
+  //mute
+  "mute_chat_disabled": "Вы не можете написать сообщение, потому что у вас отключен чат. Конец гага через: {0}",
+  
+  //unmute
+  "unmute_user_not_muted": "Пользователь не найден или в данный момент не заглушен",
+  "unmute_user_successfully_unmuted": "Игрок {0} успешно разглушен с причиной: {1}",
+  
+  //cvar
+  "cvar.not_found": "ConVar: {0} не найден",
+  "cvar.change_cvar": "Новое значение квара {blue}{0}{default} - {red}{1}",
+  
+  //slay
+  "player.slay.is_invalid": "Игрок недействителен!",
+  "player.slay.has_been_killed": "{blue}{0}{default}: игрок {blue}{1}{default} был убит",
+  
+  //othjer
+  "not_have_access": "У вас нет доступа к этой команде",
+  "private_message": "Приватное сообщение от - {blue}{0}{default}: {1}",
+  "move_team": "Администратор переместил игрока {0} в другую команду",
+  "give_noclip": "Администратор '{0}' выдал noclip игроку '{1}'",
+  "give_god_target": "Администратор дал вам бессмертие",
+  "give_god": "Вы установили себе бессмертие",
+  "add_admin_successfully": "Администратор '{0}[{1}]' успешно добавлен",
+  "add_admin_user_already_exists": "Администратор с идентификатором SteamId {0} уже существует.",
+  "cant_ban_player": "Вы не можете забанить данного игрока!",
+  "cant_mute_player": "Вы не можете отключить звук данному игроку!"
+}

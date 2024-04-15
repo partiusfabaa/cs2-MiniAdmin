@@ -1,6 +1,6 @@
-namespace BaseAdmin;
+﻿namespace BaseAdminApi.Models;
 
-public class User
+public class BanUser
 {
     public required string admin_username { get; set; }
     public required string admin_steamid { get; set; }
@@ -8,9 +8,9 @@ public class User
     public ulong steamid64 { get; set; }
     public required string steamid { get; set; }
     public required string reason { get; set; }
-    public required string unban_reason { get; set; }
-    public required string admin_unlocked_username { get; set; }
-    public required string admin_unlocked_steamid { get; set; }
+    public string unban_reason { get; set; } = string.Empty;
+    public string admin_unlocked_username { get; set; } = string.Empty;
+    public string admin_unlocked_steamid { get; set; } = string.Empty;
     public int start_ban_time { get; set; }
     public int end_ban_time { get; set; }
     public bool ban_active { get; set; }

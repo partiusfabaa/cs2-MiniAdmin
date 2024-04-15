@@ -1,0 +1,64 @@
+﻿{
+  "prefix": "[ {blue}Admin{default} ]",
+
+  //menu
+  "menu_title": "[ {blue}Admin Menu{default} ]",
+  "menu.all_players": "All players:",
+  "menu.pick_player": "Pick a player:",
+  "menu.players_control": "Player Control",
+  "menu.server_control": "Server Control",
+  "menu.lock_control": "Lock Control",
+
+  //menu players
+  "menu.players.kick_player": "Kick Player",
+  "menu.players.kill_player": "Kill Player",
+
+  //menu server
+  "menu.server.change_map": "Change Map",
+  "menu.server.map_change": "{0}: changing map to {1}",
+  "menu.server.doesnt_exist": "Map {0} not found",
+
+  //menu lock
+  "menu.lock.ban_player": "Ban Player",
+  "menu.lock.mute_player": "Mute Player",
+
+  //player
+  "player.kick": "Admin {blue}{0}{default} kicked player {blue}{1}",
+  "player.kill": "Admin {blue}{0}{default} killed player {blue}{1}",
+  "player.not_found": "Player not found",
+
+  //ban
+  "ban_user_already_banned": "User with SteamId {0} is already banned.",
+  "ban_user_is_banned": "Player {0} [{1}] is banned",
+
+  //unban
+  "unban_user_not_banned": "User not found or currently not banned",
+  "unban_user_successfully_unblocked": "Player {0} successfully unblocked with reason: {1}",
+
+  //mute
+  "mute_chat_disabled": "You cannot send messages because your chat is disabled. End of gag in: {0}",
+
+  //unmute
+  "unmute_user_not_muted": "User not found or currently not muted",
+  "unmute_user_successfully_unmuted": "Player {0} successfully unmuted with reason: {1}",
+
+  //cvar
+  "cvar.not_found": "ConVar: {0} not found",
+  "cvar.change_cvar": "New value for cvar {blue}{0}{default} - {red}{1}",
+
+  //slay
+  "player.slay.is_invalid": "Player is invalid!",
+  "player.slay.has_been_killed": "{blue}{0}{default}: player {blue}{1}{default} has been killed",
+
+  //other
+  "not_have_access": "You do not have access to this command",
+  "private_message": "Private message from - {blue}{0}{default}: {1}",
+  "move_team": "Admin moved player {0} to another team",
+  "give_noclip": "Admin '{0}' gave noclip to player '{1}'",
+  "give_god_target": "Admin gave you god mode",
+  "give_god": "You have activated god mode",
+  "add_admin_successfully": "Admin '{0}[{1}]' added successfully",
+  "add_admin_user_already_exists": "Admin with SteamId {0} already exists.",
+  "cant_ban_player": "You cannot ban this player!",
+  "cant_mute_player": "You cannot mute this player!"
+}

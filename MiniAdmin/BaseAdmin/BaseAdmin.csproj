@@ -1,21 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Platforms>AnyCPU;x86</Platforms>
+    <TargetFramework>net8.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.204" />
     <PackageReference Include="Dapper" Version="2.1.15" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="MySqlConnector" Version="2.3.0-beta.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="CounterStrikeSharp.API">
-      <HintPath>..\CounterStrikeSharp.API.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\BaseAdminApi\BaseAdminApi.csproj" />
   </ItemGroup>
 </Project>
